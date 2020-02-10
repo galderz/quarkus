@@ -70,7 +70,7 @@
             <artifactId>quarkus-builder</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.graalvm.sdk</groupId>
+            <groupId>io.mandrel.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
         </dependency>
         <dependency>

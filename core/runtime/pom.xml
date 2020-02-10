@@ -66,11 +66,11 @@
             <artifactId>slf4j-jboss-logging</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.graalvm.sdk</groupId>
+            <groupId>io.mandrel.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.graalvm.nativeimage</groupId>
+            <groupId>io.mandrel.nativeimage</groupId>
             <artifactId>svm</artifactId>
         </dependency>
         <dependency>

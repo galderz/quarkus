@@ -855,7 +855,7 @@
                 <version>${jboss-logmanager.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.graalvm.nativeimage</groupId>
+                        <groupId>io.mandrel.nativeimage</groupId>
                         <artifactId>svm</artifactId>
                     </exclusion>
                     <exclusion>
@@ -1666,7 +1666,7 @@
                 <version>${jakarta.websocket-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.graalvm.sdk</groupId>
+                <groupId>io.mandrel.sdk</groupId>
                 <artifactId>graal-sdk</artifactId>
                 <version>${graal-sdk.version}</version>
             </dependency>
@@ -1682,7 +1682,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.graalvm.nativeimage</groupId>
+                <groupId>io.mandrel.nativeimage</groupId>
                 <artifactId>svm</artifactId>
                 <version>${graal-sdk.version}</version>
                 <scope>provided</scope>

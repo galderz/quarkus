@@ -27,7 +27,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.graalvm.nativeimage</groupId>
+            <groupId>io.mandrel.nativeimage</groupId>
             <artifactId>svm</artifactId>
         </dependency>
 
