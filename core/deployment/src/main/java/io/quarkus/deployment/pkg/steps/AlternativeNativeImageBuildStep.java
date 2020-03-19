@@ -1,14 +1,29 @@
 package io.quarkus.deployment.pkg.steps;
 
+import com.sun.management.OperatingSystemMXBean;
+import io.quarkus.bootstrap.util.IoUtils;
+import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.nativeimage.NativeImageSystemPropertyBuildItem;
+import io.quarkus.deployment.pkg.NativeConfig;
+import io.quarkus.deployment.pkg.PackageConfig;
+import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
+import io.quarkus.deployment.pkg.builditem.NativeImageBuildItem;
+import io.quarkus.deployment.pkg.builditem.NativeImageSourceJarBuildItem;
+import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import org.jboss.logging.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.jar.JarFile;
@@ -18,7 +33,237 @@ import java.util.stream.Stream;
 
 public class AlternativeNativeImageBuildStep {
 
-    private static final Logger log = Logger.getLogger(NativeImageBuildStep.class);
+    private static final Logger log = Logger.getLogger(AlternativeNativeImageBuildStep.class);
+
+    private static final int DEBUG_BUILD_PROCESS_PORT = 5005;
+    private static final String QUARKUS_XMX_PROPERTY = "quarkus.native.native-image-xmx";
+
+    @BuildStep(onlyIf = NativeBuild.class)
+    ArtifactResultBuildItem result(NativeImageBuildItem image) {
+        return new ArtifactResultBuildItem(image.getPath(), PackageConfig.NATIVE, Collections.emptyMap());
+    }
+
+    @BuildStep
+    public NativeImageBuildItem build(
+        NativeConfig nativeConfig
+        , NativeImageSourceJarBuildItem nativeImageSourceJarBuildItem
+        , OutputTargetBuildItem outputTargetBuildItem
+        , PackageConfig packageConfig
+        , List<NativeImageSystemPropertyBuildItem> nativeImageProperties) {
+
+        Path runnerJar = nativeImageSourceJarBuildItem.getPath();
+
+        // TODO check if container runtime or container build
+
+        // TODO detect no pie (if linux)
+        String noPIE = "";
+
+        // TODO check graalvm version
+        // TODO cleanup server
+
+        try {
+            final List<String> arguments = nativeImageArguments(noPIE, nativeConfig, nativeImageProperties);
+
+            String executableName = outputTargetBuildItem.getBaseName() + packageConfig.runnerSuffix;
+
+            Optional<Integer> debugPort = nativeConfig.debugBuildProcess
+                ? Optional.of(DEBUG_BUILD_PROCESS_PORT)
+                : Optional.empty();
+
+            Path outputDir = nativeImageSourceJarBuildItem.getPath().getParent();
+
+            try {
+                invokeNativeImage(executableName, outputDir, runnerJar, debugPort, nativeConfig.nativeImageXmx, arguments);
+            } catch (OperatingSystem.ExecException e) {
+                // TODO signal when is docker
+                throw imageGenerationFailed(e, false);
+            }
+
+            if (OperatingSystem.type().isWindows()) { //once image is generated it gets added .exe on windows
+                executableName = executableName + ".exe";
+            }
+            Path generatedImage = outputDir.resolve(executableName);
+            Path finalPath = outputTargetBuildItem.getOutputDirectory().resolve(executableName);
+            IoUtils.copy(generatedImage, finalPath);
+            Files.delete(generatedImage);
+            System.setProperty("native.image.path", finalPath.toAbsolutePath().toString());
+
+            return new NativeImageBuildItem(finalPath);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to build native image", e);
+        }
+    }
+
+    List<String> nativeImageArguments(String noPIE, NativeConfig nativeConfig, List<NativeImageSystemPropertyBuildItem> nativeImageProperties) {
+        List<String> arguments = new ArrayList<>();
+        Boolean enableSslNative = false;
+        for (NativeImageSystemPropertyBuildItem prop : nativeImageProperties) {
+            //todo: this should be specific build items
+            if (prop.getKey().equals("quarkus.ssl.native") && prop.getValue() != null) {
+                enableSslNative = Boolean.parseBoolean(prop.getValue());
+            } else if (prop.getKey().equals("quarkus.jni.enable") && prop.getValue().equals("false")) {
+                log.warn("Your application is setting the deprecated 'quarkus.jni.enable' configuration key to false."
+                    + " Please consider removing this configuration key as it is ignored (JNI is always enabled) and it"
+                    + " will be removed in a future Quarkus version.");
+            } else if (prop.getKey().equals("quarkus.native.enable-all-security-services") && prop.getValue() != null) {
+                nativeConfig.enableAllSecurityServices |= Boolean.parseBoolean(prop.getValue());
+            } else if (prop.getKey().equals("quarkus.native.enable-all-charsets") && prop.getValue() != null) {
+                nativeConfig.addAllCharsets |= Boolean.parseBoolean(prop.getValue());
+            } else if (prop.getKey().equals("quarkus.native.enable-all-timezones") && prop.getValue() != null) {
+                nativeConfig.includeAllTimeZones |= Boolean.parseBoolean(prop.getValue());
+            } else {
+                // todo maybe just -D is better than -J-D in this case
+                if (prop.getValue() == null) {
+                    arguments.add("-D" + prop.getKey());
+                } else {
+                    arguments.add("-D" + prop.getKey() + "=" + prop.getValue());
+                }
+            }
+        }
+//        command.add("-J-Duser.language=" + System.getProperty("user.language"));
+//        command.add("-J-Dfile.encoding=" + System.getProperty("file.encoding"));
+
+        if (enableSslNative) {
+            nativeConfig.enableHttpsUrlHandler = true;
+            nativeConfig.enableAllSecurityServices = true;
+        }
+
+        nativeConfig.additionalBuildArgs.ifPresent(l -> l.stream().map(String::trim).forEach(arguments::add));
+        arguments.add("--initialize-at-build-time=");
+        arguments.add("-H:InitialCollectionPolicy=com.oracle.svm.core.genscavenge.CollectionPolicy$BySpaceAndTime"); //the default collection policy results in full GC's 50% of the time
+        arguments.add("-H:+JNI");
+//        command.add("-jar");
+//        command.add(runnerJarName);
+
+        if (nativeConfig.enableFallbackImages) {
+            arguments.add("-H:FallbackThreshold=5");
+        } else {
+            //Default: be strict as those fallback images aren't very useful
+            //and tend to cover up real problems.
+            arguments.add("-H:FallbackThreshold=0");
+        }
+
+        if (nativeConfig.reportErrorsAtRuntime) {
+            arguments.add("-H:+ReportUnsupportedElementsAtRuntime");
+        }
+        if (nativeConfig.reportExceptionStackTraces) {
+            arguments.add("-H:+ReportExceptionStackTraces");
+        }
+        if (nativeConfig.debugSymbols) {
+            arguments.add("-g");
+        }
+//        if (nativeConfig.debugBuildProcess) {
+//            arguments.add("-J-Xrunjdwp:transport=dt_socket,address=" + DEBUG_BUILD_PROCESS_PORT + ",server=y,suspend=y");
+//        }
+        if (nativeConfig.enableReports) {
+            arguments.add("-H:+PrintAnalysisCallTree");
+        }
+        if (nativeConfig.dumpProxies) {
+            arguments.add("-Dsun.misc.ProxyGenerator.saveGeneratedFiles=true");
+            if (nativeConfig.enableServer) {
+                log.warn(
+                    "Options dumpProxies and enableServer are both enabled: this will get the proxies dumped in an unknown external working directory");
+            }
+        }
+//        if (nativeConfig.nativeImageXmx.isPresent()) {
+//            command.add("-J-Xmx" + nativeConfig.nativeImageXmx.get());
+//        }
+        List<String> protocols = new ArrayList<>(2);
+        if (nativeConfig.enableHttpUrlHandler) {
+            protocols.add("http");
+        }
+        if (nativeConfig.enableHttpsUrlHandler) {
+            protocols.add("https");
+        }
+        if (nativeConfig.addAllCharsets) {
+            arguments.add("-H:+AddAllCharsets");
+        } else {
+            arguments.add("-H:-AddAllCharsets");
+        }
+        if (nativeConfig.includeAllTimeZones) {
+            arguments.add("-H:+IncludeAllTimeZones");
+        } else {
+            arguments.add("-H:-IncludeAllTimeZones");
+        }
+        if (!protocols.isEmpty()) {
+            arguments.add("-H:EnableURLProtocols=" + String.join(",", protocols));
+        }
+        if (nativeConfig.enableAllSecurityServices) {
+            arguments.add("--enable-all-security-services");
+        }
+        if (!noPIE.isEmpty()) {
+            arguments.add("-H:NativeLinkerOption=" + noPIE);
+        }
+
+        if (!nativeConfig.enableIsolates) {
+            arguments.add("-H:-SpawnIsolates");
+        }
+        if (!nativeConfig.enableJni) {
+            log.warn("Your application is setting the deprecated 'quarkus.native.enable-jni' configuration key to false."
+                + " Please consider removing this configuration key as it is ignored (JNI is always enabled) and it"
+                + " will be removed in a future Quarkus version.");
+        }
+        if (!nativeConfig.enableServer && OperatingSystem.type().notWindows()) {
+            arguments.add("--no-server");
+        }
+        if (nativeConfig.enableVmInspection) {
+            arguments.add("-H:+AllowVMInspection");
+        }
+        if (nativeConfig.autoServiceLoaderRegistration) {
+            arguments.add("-H:+UseServiceLoaderFeature");
+            //When enabling, at least print what exactly is being added:
+            arguments.add("-H:+TraceServiceLoaderFeature");
+        } else {
+            arguments.add("-H:-UseServiceLoaderFeature");
+        }
+        if (nativeConfig.fullStackTraces) {
+            arguments.add("-H:+StackTrace");
+        } else {
+            arguments.add("-H:-StackTrace");
+        }
+
+        return arguments;
+    }
+
+    private RuntimeException imageGenerationFailed(OperatingSystem.ExecException e, boolean isDocker) {
+        if (e.isOOMError()) {
+            if (isDocker && OperatingSystem.type().notLinux()) {
+                return new RuntimeException("Image generation failed. Exit code was " + e.exitValue
+                    + " which indicates an out of memory error. The most likely cause is Docker not being given enough memory. Also consider increasing the Xmx value for native image generation by setting the \""
+                    + QUARKUS_XMX_PROPERTY + "\" property");
+            } else {
+                return new RuntimeException("Image generation failed. Exit code was " + e.exitValue
+                    + " which indicates an out of memory error. Consider increasing the Xmx value for native image generation by setting the \""
+                    + QUARKUS_XMX_PROPERTY + "\" property");
+            }
+        } else {
+            return new RuntimeException("Image generation failed. Exit code: " + e.exitValue);
+        }
+    }
+
+    void invokeNativeImage(String executableName, Path outputDir, Path runnerJar, Optional<Integer> debugPort, Optional<String> nativeImageXmx, List<String> arguments) {
+        final Graal graal = Graal.of(
+            "/opt/java-11-labs"
+            , "/Users/g/1/graal-19.3/graal/sdk/latest_graalvm_home"
+        );
+
+        final OperatingSystem.JavaCommand commmand = NativeImage19x.command(
+            executableName
+            , runnerJar
+            , nativeImageXmx
+            , debugPort
+            , arguments
+            , outputDir
+            , Maven.systemMaven()
+            , graal
+        );
+
+        final Path directory = Paths.get(System.getProperty("user.dir"));
+
+        OperatingSystem.exec()
+            .compose(OperatingSystem.JavaCommand.toCommand(directory))
+            .apply(commmand);
+    }
 
     public static void main(String[] args) {
         final Graal graal = Graal.of(
@@ -26,9 +271,12 @@ public class AlternativeNativeImageBuildStep {
             , "/Users/g/1/graal-19.3/graal/sdk/latest_graalvm_home"
         );
 
-        final OperatingSystem.JavaCommand commmand = NativeImage19x.javaCommand(
+        final OperatingSystem.JavaCommand commmand = NativeImage19x.command(
             "helloworld"
             , Paths.get("/Users/g/1/jawa/substratevm/helloworld/helloworld.jar")
+            , Optional.empty()
+            , Optional.empty()
+            , Collections.emptyList()
             , Paths.get("/Users/g/1/jawa/substratevm/native-external/target")
             , Maven.systemMaven()
             , graal
@@ -43,7 +291,16 @@ public class AlternativeNativeImageBuildStep {
 
     private static class NativeImage19x {
 
-        static OperatingSystem.JavaCommand javaCommand(String executableName, Path runnerJarPath, Path outputDir, Maven maven, Graal graal) {
+        static OperatingSystem.JavaCommand command(
+            String executableName
+            , Path runnerJarPath
+            , Optional<String> nativeImageXmx
+            , Optional<Integer> debugPort
+            , List<String> extraArguments
+            , Path outputDir
+            , Maven maven
+            , Graal graal) {
+
             final Path javaBin = Graal.javaBin(graal);
             final Stream<String> vmOptions = vmOptions();
             final Stream<Pair> systemProperties = systemProperties();
@@ -51,7 +308,7 @@ public class AlternativeNativeImageBuildStep {
             final Stream<String> unamedOpens = unnamedOpens();
             final String xss = "10m";
             final String xms = "1g";
-            final String xmx = "13743895344";
+            final String xmx = xmx(nativeImageXmx);
             final Stream<String> addModules = addModules();
 
             final String version = "19.3.1";
@@ -99,7 +356,7 @@ public class AlternativeNativeImageBuildStep {
                 , runnerJarPath
             );
 
-            final Stream<String> arguments = Stream.of(
+            final Stream<String> baseArguments = Stream.of(
                 "-imagecp"
                 , OperatingSystem.pathSeparated(imageCp)
                 , hArgument("Path", outputDir.toString())
@@ -108,9 +365,14 @@ public class AlternativeNativeImageBuildStep {
                 , hArgument("Name", executableName)
             );
 
+            final Stream<String> arguments =
+                Stream.concat(baseArguments, extraArguments.stream());
+
+            final String debugAgentLib = debugAgentLib(debugPort);
+
             return new OperatingSystem.JavaCommand(
                 javaBin
-                , ""
+                , debugAgentLib
                 , vmOptions
                 , systemProperties
                 , unamedExports
@@ -126,6 +388,23 @@ public class AlternativeNativeImageBuildStep {
                 , mainClass
                 , arguments
             );
+        }
+
+        private static String xmx(Optional<String> nativeImageXmx) {
+            return nativeImageXmx.orElseGet(() -> {
+                final long memorySize = OperatingSystem.physicalMemorySize();
+                final long memoryMax = 16L * 1024 * 1024 * 1024;
+                final long memoryFraction = Long.divideUnsigned(memorySize, 10) * 8;
+                final long xmx = Math.min(memoryMax, memoryFraction);
+                return Long.toString(xmx);
+            });
+        }
+
+        private static String debugAgentLib(Optional<Integer> debugPort) {
+            return debugPort
+                .map(Object::toString)
+                .map(Strings.prepend("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address="))
+                .orElse("");
         }
 
         private static String hArgument(String name, String value) {
@@ -191,8 +470,9 @@ public class AlternativeNativeImageBuildStep {
                 , new Pair("graalvm.locatorDisabled", "true")
                 , new Pair("substratevm.IgnoreGraalVersionCheck", "true")
                 , new Pair("java.lang.invoke.stringConcat", "BC_SB")
-                , new Pair("user.country", "US")
-                , new Pair("user.language", "en")
+                , new Pair("user.country", System.getProperty("user.country"))
+                , new Pair("user.language", System.getProperty("user.language"))
+                , new Pair("file.encoding", System.getProperty("file.encoding"))
                 , new Pair("org.graalvm.version", "dev")
                 , new Pair("org.graalvm.config", "")
                 , new Pair("com.oracle.graalvm.isaot", "true") // TODO could it be set to false? what's the impact?
@@ -214,7 +494,23 @@ public class AlternativeNativeImageBuildStep {
     private static class OperatingSystem {
 
         public enum Type {
-            WINDOWS, MAC_OS, LINUX, OTHER
+            WINDOWS, MAC_OS, LINUX, OTHER;
+
+            boolean isWindows() {
+                return this == WINDOWS;
+            }
+
+            boolean notWindows() {
+                return !isWindows();
+            }
+
+            boolean isLinux() {
+                return this == LINUX;
+            }
+
+            boolean notLinux() {
+                return !isLinux();
+            }
         }
 
         static Function<Command, Void> exec() {
@@ -230,8 +526,10 @@ public class AlternativeNativeImageBuildStep {
                 .filter(not(String::isEmpty))
                 .collect(Collectors.toList());
 
+            log.info(String.join(" ", commandList));
+
             log.debugf("Execute in %s:", command.directory);
-            log.debugf(String.join(" \\\n", commandList));
+            log.debugf(String.join(" \\" + System.lineSeparator(), commandList));
             try {
                 ProcessBuilder processBuilder = new ProcessBuilder(commandList)
                     .directory(command.directory.toFile())
@@ -245,13 +543,17 @@ public class AlternativeNativeImageBuildStep {
                 Process process = processBuilder.start();
 
                 if (process.waitFor() != 0) {
-                    throw new RuntimeException(
-                        "Failed, exit code: " + process.exitValue()
-                    );
+                    throw new ExecException(process.exitValue(), "Failed execution");
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        static long physicalMemorySize() {
+            final OperatingSystemMXBean osMxBean =
+                (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+            return osMxBean.getTotalPhysicalMemorySize();
         }
 
         static String mainClass(Path jarPath) {
@@ -289,7 +591,7 @@ public class AlternativeNativeImageBuildStep {
         }
 
         static Type type() {
-            String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
+            String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ROOT);
 
             if ((OS.contains("mac")) || (OS.contains("darwin")))
                 return Type.MAC_OS;
@@ -306,6 +608,19 @@ public class AlternativeNativeImageBuildStep {
         private static <T> Predicate<T> not(Predicate<? super T> target) {
             Objects.requireNonNull(target);
             return (Predicate<T>) target.negate();
+        }
+
+        static class ExecException extends RuntimeException {
+            final int exitValue;
+
+            ExecException(int exitValue, String message) {
+                super(String.format("%s (exit value %d)", message, exitValue));
+                this.exitValue = exitValue;
+            }
+
+            boolean isOOMError() {
+                return exitValue == 137;
+            }
         }
 
         static class Command {
@@ -365,20 +680,20 @@ public class AlternativeNativeImageBuildStep {
                     Stream<Stream<String>> full = Stream.of(
                         Stream.of(javaCommand.javaBin.toString())
                         , Stream.of(javaCommand.agentlib)
-                        , javaCommand.vmOptions.map(prepend("-XX:"))
+                        , javaCommand.vmOptions.map(Strings.prepend("-XX:"))
                         , javaCommand.systemProperties.map(formatPair("-D%s=%s"))
                         , javaCommand.unnamedExports.map(allUnnamed()).flatMap(addExports())
                         , javaCommand.unnamedOpens.map(allUnnamed()).flatMap(addOpens())
-                        , Stream.of(prepend("-Xss").apply(javaCommand.xss))
-                        , Stream.of(prepend("-Xms").apply(javaCommand.xms))
-                        , Stream.of(prepend("-Xmx").apply(javaCommand.xmx))
+                        , Stream.of(Strings.prepend("-Xss").apply(javaCommand.xss))
+                        , Stream.of(Strings.prepend("-Xms").apply(javaCommand.xms))
+                        , Stream.of(Strings.prepend("-Xmx").apply(javaCommand.xmx))
                         , Stream.of("--add-modules")
                         , Stream.of(javaCommand.addModules.collect(Collectors.joining(",")))
                         , Stream.of("--module-path")
                         , Stream.of(OperatingSystem.pathSeparated(javaCommand.modulePath))
                         , Stream.of("--upgrade-module-path")
                         , Stream.of(OperatingSystem.pathSeparated(javaCommand.upgradeModulePath))
-                        , Stream.of(prepend("-javaagent:").apply(javaCommand.javaAgent.toString()))
+                        , Stream.of(Strings.prepend("-javaagent:").apply(javaCommand.javaAgent.toString()))
                         , Stream.of("--class-path")
                         , Stream.of(OperatingSystem.pathSeparated(javaCommand.classPath))
                         , Stream.of(javaCommand.mainClass)
@@ -395,7 +710,7 @@ public class AlternativeNativeImageBuildStep {
             }
 
             private static Function<String, String> allUnnamed() {
-                return append("=ALL-UNNAMED");
+                return Strings.append("=ALL-UNNAMED");
             }
 
             private static Function<String, Stream<? extends String>> addExports() {
@@ -406,19 +721,23 @@ public class AlternativeNativeImageBuildStep {
                 return modulePackage -> Stream.of("--add-opens", modulePackage);
             }
 
-            private static Function<String, String> prepend(String toPrepend) {
-                return text -> String.format("%s%s", toPrepend, text);
-            }
-
-            private static Function<String, String> append(String toAppend) {
-                return text -> String.format("%s%s", text, toAppend);
-            }
-
             static Function<Pair, String> formatPair(String format) {
                 return pair -> String.format(format, pair.name, pair.value);
             }
 
         }
+    }
+
+    private static class Strings {
+
+        static Function<String, String> prepend(String toPrepend) {
+            return text -> String.format("%s%s", toPrepend, text);
+        }
+
+        static Function<String, String> append(String toAppend) {
+            return text -> String.format("%s%s", text, toAppend);
+        }
+
     }
 
     private static class Pair {
