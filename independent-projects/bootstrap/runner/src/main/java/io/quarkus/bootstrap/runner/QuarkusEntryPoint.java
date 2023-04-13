@@ -37,7 +37,7 @@ public class QuarkusEntryPoint {
     }
 
     private static void doRun(Object args) throws IOException, ClassNotFoundException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException {
+            InvocationTargetException, NoSuchMethodException, InstantiationException {
         String path = QuarkusEntryPoint.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         String decodedPath = URLDecoder.decode(path, "UTF-8");
         Path appRoot = new File(decodedPath).toPath().getParent().getParent().getParent();
@@ -57,8 +57,12 @@ public class QuarkusEntryPoint {
             try {
                 Thread.currentThread().setContextClassLoader(appRunnerClassLoader);
                 QuarkusForkJoinWorkerThread.setQuarkusAppClassloader(appRunnerClassLoader);
-                Class<?> mainClass = appRunnerClassLoader.loadClass(app.getMainClass());
-                mainClass.getMethod("main", String[].class).invoke(null, args);
+                if (Boolean.getBoolean("quarkus.crac.checkpoint")) {
+                    CracCheckpoint.doCheckpoint(appRunnerClassLoader);
+                } else {
+                    Class<?> mainClass = appRunnerClassLoader.loadClass(app.getMainClass());
+                    mainClass.getMethod("main", String[].class).invoke(null, args);
+                }
             } finally {
                 QuarkusForkJoinWorkerThread.setQuarkusAppClassloader(null);
                 appRunnerClassLoader.close();

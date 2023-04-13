@@ -22,7 +22,8 @@ public class PackageTypeVerificationBuildStep {
                 new PackageTypeBuildItem(PackageConfig.JAR), new PackageTypeBuildItem(PackageConfig.FAST_JAR),
                 new PackageTypeBuildItem(PackageConfig.LEGACY_JAR),
                 new PackageTypeBuildItem(PackageConfig.UBER_JAR),
-                new PackageTypeBuildItem(PackageConfig.MUTABLE_JAR));
+                new PackageTypeBuildItem(PackageConfig.MUTABLE_JAR),
+                new PackageTypeBuildItem(PackageConfig.CRAC));
     }
 
     @BuildStep

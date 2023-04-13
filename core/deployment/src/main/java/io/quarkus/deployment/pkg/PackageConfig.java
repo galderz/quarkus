@@ -22,6 +22,7 @@ public class PackageConfig {
     public static final String LEGACY = "legacy";
     public static final String LEGACY_JAR = "legacy-jar";
     public static final String NATIVE = "native";
+    public static final String CRAC = "crac";
     // does everything 'native' but stops short of actually executing the 'native-image' command
     public static final String NATIVE_SOURCES = "native-sources";
 
