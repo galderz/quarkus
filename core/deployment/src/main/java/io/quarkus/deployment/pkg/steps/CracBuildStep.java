@@ -27,7 +27,7 @@ public class CracBuildStep {
         final String checkpointName = "checkpoint";
         final Path checkpointPath = outputTargetBuildItem.getOutputDirectory().resolve(checkpointName);
         final CracBuildRunner cracBuildRunner = new CracBuildRunner();
-        cracBuildRunner.build(jarBuildItem, processInheritIODisabledBuildItem);
+        cracBuildRunner.build(checkpointPath, jarBuildItem, processInheritIODisabledBuildItem);
         return new CracBuildItem(checkpointPath);
     }
 }
