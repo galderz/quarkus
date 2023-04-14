@@ -14,6 +14,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.crac.CheckpointException;
+import org.crac.RestoreException;
+
 import io.quarkus.bootstrap.forkjoin.QuarkusForkJoinWorkerThread;
 import io.quarkus.bootstrap.logging.InitialConfigurator;
 
@@ -37,7 +40,7 @@ public class QuarkusEntryPoint {
     }
 
     private static void doRun(Object args) throws IOException, ClassNotFoundException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException, InstantiationException {
+            InvocationTargetException, NoSuchMethodException, InstantiationException, CheckpointException, RestoreException {
         String path = QuarkusEntryPoint.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         String decodedPath = URLDecoder.decode(path, "UTF-8");
         Path appRoot = new File(decodedPath).toPath().getParent().getParent().getParent();
