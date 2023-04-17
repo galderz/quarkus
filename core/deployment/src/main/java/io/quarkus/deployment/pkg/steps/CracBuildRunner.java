@@ -3,6 +3,7 @@ package io.quarkus.deployment.pkg.steps;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,11 +27,19 @@ public class CracBuildRunner {
         // final String checkpointMain = "io.quarkus.bootstrap.runner.CracCheckpoint"; // CracCheckpoint loaded but ApplicationImpl not found
         // final String checkpointMain = "io.quarkus.runtime.CracCheckpoint"; // CrackCheckpoint not found
 
-        final String java = findJavaCmd();
-        final String cracCheckpointTo = "-XX:CRaCCheckpointTo=" + checkpointPath;
-        final List<String> command = List.of(java, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005", "-jar", cracCheckpointTo, "-Dquarkus.crac.checkpoint=true",
-                jarBuildItem.getPath().toString());
-        log.info("-Dquarkus.crac.checkpoint.debug=" + Boolean.getBoolean("quarkus.crac.checkpoint.debug"));
+        final boolean debug = Boolean.getBoolean("quarkus.crac.checkpoint.debug");
+
+        final List<String> command = new ArrayList<>();
+        command.add(findJavaCmd());
+        if (debug) {
+            command.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005");
+        }
+        command.add("-jar");
+        command.add("-XX:CRaCCheckpointTo=" + checkpointPath);
+        command.add("-Dquarkus.crac.checkpoint=true");
+        command.add(jarBuildItem.getPath().toString());
+
+        // log.info("-Dquarkus.crac.checkpoint.debug=" + debug);
         log.info(String.join(" ", command).replace("$", "\\$"));
 
         final ProcessBuilder pb = new ProcessBuilder(command).directory(jarBuildItem.getPath().getParent().toFile());
