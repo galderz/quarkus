@@ -36,6 +36,9 @@ public class CracBuildRunner {
         }
         command.add("-jar");
         command.add("-XX:CRaCCheckpointTo=" + checkpointPath);
+        command.add("-XX:+UnlockDiagnosticVMOptions");
+        command.add("-XX:+CRTraceStartupTime");
+        command.add("-Djdk.crac.trace-startup-time=true");
         command.add("-Dquarkus.crac.checkpoint=true");
         command.add(jarBuildItem.getPath().toString());
 
