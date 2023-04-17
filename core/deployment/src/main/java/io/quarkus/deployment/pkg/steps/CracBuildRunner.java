@@ -49,7 +49,7 @@ public class CracBuildRunner {
         try {
             final Process process = ProcessUtil.launchProcessStreamStdOut(pb, processInheritIODisabledBuildItem.isPresent());
             int exitCode = process.waitFor();
-            if (exitCode != 0) {
+            if (exitCode != 137) {
                 throw new RuntimeException("CRaC checkpoint failed");
             }
         } catch (IOException e) {
