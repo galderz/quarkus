@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 import io.quarkus.builder.item.SimpleBuildItem;
 
-public class CracBuildItem extends SimpleBuildItem {
+public final class CracBuildItem extends SimpleBuildItem {
 
     private final Path path;
 
