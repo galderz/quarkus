@@ -14,8 +14,8 @@ public class CracCheckpoint {
         Class<?> appClass = Class.forName("io.quarkus.runner.ApplicationImpl", true, loader);
         // todo do I need to create a new instance
         appClass.getDeclaredConstructor().newInstance();
-        System.out.println("CracCheckpoint.doCheckpoint: try to do a checkpoint...");
+        System.out.println("CracCheckpoint.doCheckpoint: checkpoint...");
         Core.checkpointRestore();
-        System.out.println("CracCheckpoint.doCheckpoint: checkpoint complete");
+        System.out.println("CracCheckpoint.doCheckpoint: restored checkpoint");
     }
 }

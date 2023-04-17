@@ -62,10 +62,9 @@ public class QuarkusEntryPoint {
                 QuarkusForkJoinWorkerThread.setQuarkusAppClassloader(appRunnerClassLoader);
                 if (Boolean.getBoolean("quarkus.crac.checkpoint")) {
                     CracCheckpoint.doCheckpoint(appRunnerClassLoader);
-                } else {
-                    Class<?> mainClass = appRunnerClassLoader.loadClass(app.getMainClass());
-                    mainClass.getMethod("main", String[].class).invoke(null, args);
                 }
+                Class<?> mainClass = appRunnerClassLoader.loadClass(app.getMainClass());
+                mainClass.getMethod("main", String[].class).invoke(null, args);
             } finally {
                 QuarkusForkJoinWorkerThread.setQuarkusAppClassloader(null);
                 appRunnerClassLoader.close();
