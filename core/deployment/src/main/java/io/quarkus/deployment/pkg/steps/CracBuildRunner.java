@@ -47,7 +47,7 @@ public class CracBuildRunner {
 
         final ProcessBuilder pb = new ProcessBuilder(command).directory(jarBuildItem.getPath().getParent().toFile());
         try {
-            final Process process = ProcessUtil.launchProcessStreamStdOut(pb, processInheritIODisabledBuildItem.isPresent());
+            final Process process = ProcessUtil.launchProcess(pb, processInheritIODisabledBuildItem.isPresent());
             int exitCode = process.waitFor();
             if (exitCode != 137) {
                 throw new RuntimeException("CRaC checkpoint failed");
