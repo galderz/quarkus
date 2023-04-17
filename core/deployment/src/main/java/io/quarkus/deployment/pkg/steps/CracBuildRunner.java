@@ -21,7 +21,8 @@ public class CracBuildRunner {
     // todo dup NativeImageBuildStep
     private static final String JAVA_HOME_ENV = "JAVA_HOME";
 
-    void build(Path checkpointPath, JarBuildItem jarBuildItem, Optional<ProcessInheritIODisabledBuildItem> processInheritIODisabledBuildItem) {
+    void build(Path checkpointPath, JarBuildItem jarBuildItem,
+            Optional<ProcessInheritIODisabledBuildItem> processInheritIODisabledBuildItem) {
         // final String checkpointMain = "io.quarkus.bootstrap.runner.CracCheckpoint"; // CracCheckpoint loaded but ApplicationImpl not found
         // final String checkpointMain = "io.quarkus.runtime.CracCheckpoint"; // CrackCheckpoint not found
 
