@@ -118,7 +118,7 @@ public final class RunnerClassLoader extends ClassLoader {
     private void accessingResource(final ClassLoadingResource resource) {
         final ClassLoadingResource toEvict;
         synchronized (this.currentlyBufferedResources) {
-            if (!postBootPhase) {
+            if (!postBootPhase && !Boolean.getBoolean("quarkus.crac.checkpoint")) {
                 //We only want to limit the jar buffers after the initial bootstrap has been completed
                 return;
             }
