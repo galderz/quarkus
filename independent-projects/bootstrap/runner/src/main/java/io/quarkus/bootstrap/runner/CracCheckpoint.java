@@ -15,7 +15,12 @@ public class CracCheckpoint {
         // todo do I need to create a new instance
         appClass.getDeclaredConstructor().newInstance();
         System.out.println("CracCheckpoint.doCheckpoint: checkpoint...");
-        Core.checkpointRestore();
-        System.out.println("CracCheckpoint.doCheckpoint: restored checkpoint");
+        try {
+            Core.checkpointRestore();
+            System.out.println("CracCheckpoint.doCheckpoint: restored checkpoint");
+        } catch (Throwable t) {
+            System.out.println("CracCheckpoint.doCheckpoint: error doing the checkpoint or restore");
+            t.printStackTrace();
+        }
     }
 }
