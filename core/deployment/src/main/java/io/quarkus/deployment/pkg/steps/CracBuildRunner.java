@@ -28,8 +28,9 @@ public class CracBuildRunner {
 
         final String java = findJavaCmd();
         final String cracCheckpointTo = "-XX:CRaCCheckpointTo=" + checkpointPath;
-        final List<String> command = List.of(java, "-jar", cracCheckpointTo, "-Dquarkus.crac.checkpoint=true",
+        final List<String> command = List.of(java, "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005", "-jar", cracCheckpointTo, "-Dquarkus.crac.checkpoint=true",
                 jarBuildItem.getPath().toString());
+        log.info("-Dquarkus.crac.checkpoint.debug=" + Boolean.getBoolean("quarkus.crac.checkpoint.debug"));
         log.info(String.join(" ", command).replace("$", "\\$"));
 
         final ProcessBuilder pb = new ProcessBuilder(command).directory(jarBuildItem.getPath().getParent().toFile());
