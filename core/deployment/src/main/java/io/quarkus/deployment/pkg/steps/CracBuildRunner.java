@@ -31,6 +31,7 @@ public class CracBuildRunner {
 
         final List<String> command = new ArrayList<>();
         command.add(findJavaCmd());
+        command.add("-Xmx128m"); // todo hardcoded for now, cannot be changed upon restore
         if (debug) {
             command.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005");
         }
