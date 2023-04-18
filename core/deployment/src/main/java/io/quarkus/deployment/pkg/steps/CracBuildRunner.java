@@ -24,9 +24,6 @@ public class CracBuildRunner {
 
     void build(Path checkpointPath, JarBuildItem jarBuildItem,
             Optional<ProcessInheritIODisabledBuildItem> processInheritIODisabledBuildItem) {
-        // final String checkpointMain = "io.quarkus.bootstrap.runner.CracCheckpoint"; // CracCheckpoint loaded but ApplicationImpl not found
-        // final String checkpointMain = "io.quarkus.runtime.CracCheckpoint"; // CrackCheckpoint not found
-
         final boolean debug = Boolean.getBoolean("quarkus.crac.checkpoint.debug");
 
         final List<String> command = new ArrayList<>();
@@ -43,7 +40,6 @@ public class CracBuildRunner {
         command.add("-Dquarkus.crac.checkpoint=true");
         command.add(jarBuildItem.getPath().toString());
 
-        // log.info("-Dquarkus.crac.checkpoint.debug=" + debug);
         log.info(String.join(" ", command).replace("$", "\\$"));
 
         final ProcessBuilder pb = new ProcessBuilder(command).directory(jarBuildItem.getPath().getParent().toFile());
