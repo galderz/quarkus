@@ -16,6 +16,7 @@ public class CracCheckpoint {
         appClass.getDeclaredConstructor().newInstance();
         System.out.println("CracCheckpoint.doCheckpoint: checkpoint...");
         Core.checkpointRestore();
-        System.out.println("CracCheckpoint.doCheckpoint: restored checkpoint");
+        Timing.restoreStarted(false);
+        // System.out.println("CracCheckpoint.doCheckpoint: restored checkpoint");
     }
 }
