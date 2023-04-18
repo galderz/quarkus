@@ -115,7 +115,8 @@ public class Timing {
             logger.infof("Quarkus %s %s started in %ss. %s", quarkusVersion, nativeOrJvm, bootTimeSecondsRepresentation,
                     t.httpServerInfo);
         } else {
-            logger.infof("%s %s %s (powered by Quarkus %s) started in %ss (restored in %ss). %s", name, version, nativeOrJvm, quarkusVersion,
+            logger.infof("%s %s %s (powered by Quarkus %s) started in %ss (restored in %ss). %s", name, version, nativeOrJvm,
+                    quarkusVersion,
                     bootTimeSecondsRepresentation, restoreTimeSecondsRepresentation, t.httpServerInfo);
         }
         logger.infof("Profile%s %s activated. %s", profiles.size() > 1 ? "s" : "", String.join(",", profiles),
