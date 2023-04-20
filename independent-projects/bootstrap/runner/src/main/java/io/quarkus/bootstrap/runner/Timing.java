@@ -103,21 +103,26 @@ public class Timing {
         Timing t = get(anc);
         final long now = System.nanoTime();
         final long bootTimeNanoSeconds = now - t.bootStartTime;
-        final long restoreTimeNanoSeconds = now - t.restoreStartTime;
         final Logger logger = Logger.getLogger("io.quarkus");
         //Use a BigDecimal so we can render in seconds with 3 digits precision, as requested:
-        final BigDecimal bootTimeSecondsRepresentation = convertToBigDecimalSeconds(bootTimeNanoSeconds);
-        final BigDecimal restoreTimeSecondsRepresentation = convertToBigDecimalSeconds(restoreTimeNanoSeconds);
+        final BigDecimal secondsRepresentation = convertToBigDecimalSeconds(bootTimeNanoSeconds);
         String safeAppName = (name == null || name.trim().isEmpty()) ? UNSET_VALUE : name;
         String safeAppVersion = (version == null || version.trim().isEmpty()) ? UNSET_VALUE : version;
         final String nativeOrJvm = ImageInfo.inImageRuntimeCode() ? "native" : "on JVM";
         if (UNSET_VALUE.equals(safeAppName) || UNSET_VALUE.equals(safeAppVersion)) {
-            logger.infof("Quarkus %s %s started in %ss. %s", quarkusVersion, nativeOrJvm, bootTimeSecondsRepresentation,
-                    t.httpServerInfo);
+            logger.infof("Quarkus %s %s started in %ss. %s", quarkusVersion, nativeOrJvm, secondsRepresentation,
+                t.httpServerInfo);
         } else {
-            logger.infof("%s %s %s (powered by Quarkus %s) started in %ss (restored in %ss). %s", name, version, nativeOrJvm,
+            if (t.restoreStartTime > 0) {
+                final long restoreTimeNanoSeconds = now - t.restoreStartTime;
+                final BigDecimal restoreTimeSecondsRepresentation = convertToBigDecimalSeconds(restoreTimeNanoSeconds);
+                logger.infof("%s %s %s (powered by Quarkus %s) started in %ss (restored in %ss). %s", name, version, nativeOrJvm,
                     quarkusVersion,
-                    bootTimeSecondsRepresentation, restoreTimeSecondsRepresentation, t.httpServerInfo);
+                    secondsRepresentation, restoreTimeSecondsRepresentation, t.httpServerInfo);
+            } else {
+                logger.infof("%s %s %s (powered by Quarkus %s) started in %ss. %s", name, version, nativeOrJvm, quarkusVersion,
+                    secondsRepresentation, t.httpServerInfo);
+            }
         }
         logger.infof("Profile%s %s activated. %s", profiles.size() > 1 ? "s" : "", String.join(",", profiles),
                 liveCoding ? "Live Coding activated." : "");
