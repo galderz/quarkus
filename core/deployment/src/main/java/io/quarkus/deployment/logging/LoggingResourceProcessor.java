@@ -173,6 +173,12 @@ public final class LoggingResourceProcessor {
     //                        JBOSS_LOGMANAGER_LOGGER_FINDER_SERVICE_MATCH_REGEX));
     //    }
 
+    @BuildStep
+    public void registerServiceProviders(BuildProducer<ServiceProviderBuildItem> serviceProvider) {
+        serviceProvider.produce(new ServiceProviderBuildItem("io.quarkus.arc.ComponentsProvider",
+                "io.quarkus.arc.setup.Default_ComponentsProvider"));
+    }
+
     @BuildStep(onlyIf = { NativeBuild.class })
     ReflectiveClassBuildItem setupReflectionClasses() {
         return ReflectiveClassBuildItem.builder("io.smallrye.config._private.ConfigLogging_$logger").build();
