@@ -13,11 +13,17 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.GeneratedFileSystemResourceBuildItem;
 import io.quarkus.deployment.builditem.GeneratedFileSystemResourceHandledBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.runtime.LaunchMode;
 
 public class FileSystemResourcesBuildStep {
+
+    @BuildStep(onlyIf = { NativeBuild.class })
+    ReflectiveClassBuildItem setupReflectionClasses() {
+        return ReflectiveClassBuildItem.builder("jdk.nio.zipfs.ZipFileSystemProvider").build();
+    }
 
     @BuildStep(onlyIfNot = IsProduction.class)
     public void notNormalMode(OutputTargetBuildItem outputTargetBuildItem,
