@@ -876,9 +876,9 @@ public class NativeImageBuildStep {
                     nativeImageArgs.add("--no-fallback");
                 }
 
-                if (!classpathIsBroken) {
-                    nativeImageArgs.add("--link-at-build-time");
-                }
+                //                if (!classpathIsBroken) {
+                //                    nativeImageArgs.add("--link-at-build-time");
+                //                }
 
                 if (nativeConfig.reportErrorsAtRuntime()) {
                     nativeImageArgs.add("--report-unsupported-elements-at-runtime");
