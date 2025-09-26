@@ -13,9 +13,6 @@ import com.oracle.svm.core.annotate.RecomputeFieldValue;
 import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 
-import io.quarkus.bootstrap.logging.InitialConfigurator;
-import io.quarkus.bootstrap.logging.QuarkusDelayedHandler;
-
 @TargetClass(className = "org.jboss.logmanager.LoggerNode")
 final class Target_org_jboss_logmanager_LoggerNode {
 
@@ -33,12 +30,12 @@ final class Target_org_slf4j_LoggerFactory {
     }
 }
 
-@TargetClass(InitialConfigurator.class)
-final class Target_io_quarkus_bootstrap_logging_InitialConfigurator {
-    @RecomputeFieldValue(kind = RecomputeFieldValue.Kind.FromAlias)
-    @Alias
-    public static QuarkusDelayedHandler DELAYED_HANDLER = new QuarkusDelayedHandler();
-}
+//@TargetClass(InitialConfigurator.class)
+//final class Target_io_quarkus_bootstrap_logging_InitialConfigurator {
+//    @RecomputeFieldValue(kind = RecomputeFieldValue.Kind.FromAlias)
+//    @Alias
+//    public static QuarkusDelayedHandler DELAYED_HANDLER = new QuarkusDelayedHandler();
+//}
 
 @TargetClass(java.util.logging.Logger.class)
 final class Target_java_util_logging_Logger {
