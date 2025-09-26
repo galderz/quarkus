@@ -181,7 +181,8 @@ public final class LoggingResourceProcessor {
 
     @BuildStep(onlyIf = { NativeBuild.class })
     ReflectiveClassBuildItem setupReflectionClasses() {
-        return ReflectiveClassBuildItem.builder("io.smallrye.config._private.ConfigLogging_$logger").build();
+        return ReflectiveClassBuildItem.builder(
+                "io.smallrye.config._private.ConfigLogging_$logger", "org.acme.getting.started.GreetingResource").build();
     }
 
     @BuildStep
