@@ -105,6 +105,7 @@ import io.quarkus.deployment.metrics.MetricsFactoryConsumerBuildItem;
 import io.quarkus.deployment.pkg.builditem.BuildSystemTargetBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
+import io.quarkus.deployment.pkg.steps.NativeBuild;
 import io.quarkus.deployment.pkg.steps.NativeOrNativeSourcesBuild;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.deployment.util.JandexUtil;
@@ -171,6 +172,11 @@ public final class LoggingResourceProcessor {
     //                .produce(new ExcludeConfigBuildItem(JBOSS_LOGMANAGER_JAR_MATCH_REGEX,
     //                        JBOSS_LOGMANAGER_LOGGER_FINDER_SERVICE_MATCH_REGEX));
     //    }
+
+    @BuildStep(onlyIf = { NativeBuild.class })
+    ReflectiveClassBuildItem setupReflectionClasses() {
+        return ReflectiveClassBuildItem.builder("io.smallrye.config._private.ConfigLogging_$logger").build();
+    }
 
     @BuildStep
     void setupLogFilters(BuildProducer<LogCleanupFilterBuildItem> filters) {
