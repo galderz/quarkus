@@ -156,6 +156,22 @@ public final class LoggingResourceProcessor {
             + Filter.class.getName() + "' and that are marked as final.";
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
+    //    static final String JBOSS_LOGMANAGER_JAR_MATCH_REGEX = "org\\.jboss\\.logmanager\\.jboss-logmanager";
+    //    static final String JBOSS_LOGMANAGER_LOGGER_FINDER_SERVICE_MATCH_REGEX = "META-INF/services/java\\.lang\\.System$LoggerFinder";
+
+    //    @BuildStep
+    //    void logManagerServiceLoggerFinder(final BuildProducer<NativeImageResourcePatternsBuildItem> resource) {
+    //        resource.produce(NativeImageResourcePatternsBuildItem.builder()
+    //                .excludePatterns("META-INF/services/java\\.lang\\.System$LoggerFinder").build());
+    //    }
+
+    //    @BuildStep
+    //    void excludeNettyDirectives(BuildProducer<ExcludeConfigBuildItem> nativeImageExclusions) {
+    //        nativeImageExclusions
+    //                .produce(new ExcludeConfigBuildItem(JBOSS_LOGMANAGER_JAR_MATCH_REGEX,
+    //                        JBOSS_LOGMANAGER_LOGGER_FINDER_SERVICE_MATCH_REGEX));
+    //    }
+
     @BuildStep
     void setupLogFilters(BuildProducer<LogCleanupFilterBuildItem> filters) {
         filters.produce(new LogCleanupFilterBuildItem("org.jboss.threads", "JBoss Threads version"));
