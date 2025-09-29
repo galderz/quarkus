@@ -188,6 +188,7 @@ public final class LoggingResourceProcessor {
                 "io.netty.buffer.AbstractByteBufAllocator",
                 "java.nio.channels.spi.SelectorProvider",
                 "io.netty.util.internal.shaded.org.jctools.queues.unpadded.MpscUnpaddedArrayQueueProducerIndexField",
+                "io.netty.util.internal.shaded.org.jctools.queues.unpadded.MpscUnpaddedArrayQueueProducerLimitField",
                 "jakarta.transaction.RollbackException").fields().methods().build();
     }
 
