@@ -189,6 +189,7 @@ public final class LoggingResourceProcessor {
                 "java.nio.channels.spi.SelectorProvider",
                 "io.netty.util.internal.shaded.org.jctools.queues.unpadded.MpscUnpaddedArrayQueueProducerIndexField",
                 "io.netty.util.internal.shaded.org.jctools.queues.unpadded.MpscUnpaddedArrayQueueProducerLimitField",
+                "io.netty.util.internal.shaded.org.jctools.queues.unpadded.MpscUnpaddedArrayQueueConsumerIndexField",
                 "jakarta.transaction.RollbackException").fields().methods().build();
     }
 
