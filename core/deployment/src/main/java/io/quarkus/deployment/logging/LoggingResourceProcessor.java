@@ -185,7 +185,7 @@ public final class LoggingResourceProcessor {
                 "io.smallrye.config._private.ConfigLogging_$logger", "io.smallrye.config._private.ConfigMessages_$bundle",
                 "org.acme.getting.started.GreetingResource",
                 "io.quarkus.rest.runtime.__QuarkusInit", "io.quarkus.arc.ArcUndeclaredThrowableException",
-                "jakarta.transaction.RollbackException").build();
+                "jakarta.transaction.RollbackException").fields().build();
     }
 
     @BuildStep
