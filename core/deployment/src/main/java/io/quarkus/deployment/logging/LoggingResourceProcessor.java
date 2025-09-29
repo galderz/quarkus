@@ -182,7 +182,8 @@ public final class LoggingResourceProcessor {
     @BuildStep(onlyIf = { NativeBuild.class })
     ReflectiveClassBuildItem setupReflectionClasses() {
         return ReflectiveClassBuildItem.builder(
-                "io.smallrye.config._private.ConfigLogging_$logger", "org.acme.getting.started.GreetingResource",
+                "io.smallrye.config._private.ConfigLogging_$logger", "io.smallrye.config._private.ConfigMessages_$bundle",
+                "org.acme.getting.started.GreetingResource",
                 "io.quarkus.rest.runtime.__QuarkusInit", "io.quarkus.arc.ArcUndeclaredThrowableException",
                 "jakarta.transaction.RollbackException").build();
     }
