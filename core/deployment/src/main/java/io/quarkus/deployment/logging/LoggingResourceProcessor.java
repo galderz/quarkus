@@ -186,6 +186,7 @@ public final class LoggingResourceProcessor {
                 "org.acme.getting.started.GreetingResource",
                 "io.quarkus.rest.runtime.__QuarkusInit", "io.quarkus.arc.ArcUndeclaredThrowableException",
                 "io.netty.buffer.AbstractByteBufAllocator",
+                "java.nio.channels.spi.SelectorProvider",
                 "jakarta.transaction.RollbackException").fields().methods().build();
     }
 
