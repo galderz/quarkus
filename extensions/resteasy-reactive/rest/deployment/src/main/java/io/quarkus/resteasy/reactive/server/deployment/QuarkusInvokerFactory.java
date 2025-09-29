@@ -20,6 +20,7 @@ import org.jboss.resteasy.reactive.server.spi.EndpointInvoker;
 import io.quarkus.deployment.GeneratedClassGizmo2Adaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.Gizmo;
@@ -30,13 +31,16 @@ public class QuarkusInvokerFactory implements EndpointInvokerFactory {
 
     private final Predicate<String> applicationClassPredicate;
     final BuildProducer<GeneratedClassBuildItem> generatedClassBuildItemBuildProducer;
+    final BuildProducer<ReflectiveClassBuildItem> reflectiveClassBuildItemBuildProducer;
     final ResteasyReactiveRecorder recorder;
 
     public QuarkusInvokerFactory(Predicate<String> applicationClassPredicate,
             BuildProducer<GeneratedClassBuildItem> generatedClassBuildItemBuildProducer,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClassBuildItemBuildProducer,
             ResteasyReactiveRecorder recorder) {
         this.applicationClassPredicate = applicationClassPredicate;
         this.generatedClassBuildItemBuildProducer = generatedClassBuildItemBuildProducer;
+        this.reflectiveClassBuildItemBuildProducer = reflectiveClassBuildItemBuildProducer;
         this.recorder = recorder;
     }
 
@@ -51,6 +55,7 @@ public class QuarkusInvokerFactory implements EndpointInvokerFactory {
 
         String baseName = currentClassInfo.name() + "$quarkusrestinvoker$" + method.getName() + "_"
                 + HashUtil.sha1(endpointIdentifier);
+        reflectiveClassBuildItemBuildProducer.produce(ReflectiveClassBuildItem.builder(baseName).build());
         ClassOutput classOutput = new GeneratedClassGizmo2Adaptor(generatedClassBuildItemBuildProducer, null,
                 applicationClassPredicate.test(currentClassInfo.name().toString()));
         Gizmo g = Gizmo.create(classOutput);

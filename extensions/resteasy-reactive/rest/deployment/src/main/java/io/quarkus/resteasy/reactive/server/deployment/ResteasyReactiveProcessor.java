@@ -548,6 +548,7 @@ public class ResteasyReactiveProcessor {
                     .setFactoryCreator(new QuarkusFactoryCreator(recorder, beanContainerBuildItem.getValue()))
                     .setEndpointInvokerFactory(
                             new QuarkusInvokerFactory(applicationClassPredicate, generatedClassBuildItemBuildProducer,
+                                    reflectiveClassBuildItemBuildProducer,
                                     recorder))
                     .setGeneratedClassBuildItemBuildProducer(generatedClassBuildItemBuildProducer)
                     .setExistingConverters(existingConverters)
