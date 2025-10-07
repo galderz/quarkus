@@ -98,7 +98,8 @@ public class NativeImageFeatureStep {
             overallCatch.invokeStaticMethod(BUILD_TIME_INITIALIZATION,
                     overallCatch.marshalAsArray(String.class,
                             overallCatch.load("org.jboss.logmanager"), overallCatch.load("io.smallrye.common.ref"),
-                            overallCatch.load("io.quarkus.bootstrap.logging")));
+                            overallCatch.load("io.quarkus.bootstrap.logging"),
+                            overallCatch.load("io.quarkus.vertx.mdc.provider")));
         }
 
         // Set the user.language and user.country system properties to the default locale
