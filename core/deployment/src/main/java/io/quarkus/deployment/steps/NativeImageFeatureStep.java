@@ -96,7 +96,8 @@ public class NativeImageFeatureStep {
                     overallCatch.marshalAsArray(String.class, overallCatch.load(""))); // empty string means initialize everything
         } else {
             overallCatch.invokeStaticMethod(BUILD_TIME_INITIALIZATION,
-                    overallCatch.marshalAsArray(String.class, overallCatch.load("org.jboss.logmanager")));
+                    overallCatch.marshalAsArray(String.class,
+                            overallCatch.load("org.jboss.logmanager"), overallCatch.load("io.smallrye.common.ref")));
         }
 
         // Set the user.language and user.country system properties to the default locale
