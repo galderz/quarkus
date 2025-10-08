@@ -97,7 +97,8 @@ public class NativeImageFeatureStep {
                 overallCatch.marshalAsArray(String.class, overallCatch.load(""))); // empty string means initialize everything
         overallCatch.invokeStaticMethod(RUN_TIME_INITIALIZATION,
                 overallCatch.marshalAsArray(String.class, overallCatch.load("io.smallrye.common.classloader.ClassPathUtils"),
-                        overallCatch.load("io.quarkus.fs.util.FileSystemProviders"))); // force runtime initialization on specific packages
+                        overallCatch.load("io.quarkus.fs.util.FileSystemProviders"),
+                        overallCatch.load("org.apache.kafka.common.security.ssl"))); // force runtime initialization on specific packages
 
         // Set the user.language and user.country system properties to the default locale
         // The deprecated option takes precedence for users who are already using it.
