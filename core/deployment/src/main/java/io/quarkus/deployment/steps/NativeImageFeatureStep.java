@@ -41,6 +41,8 @@ public class NativeImageFeatureStep {
             Class.class);
     private static final MethodDescriptor BUILD_TIME_INITIALIZATION = ofMethod(RuntimeClassInitialization.class,
             "initializeAtBuildTime", void.class, String[].class);
+    private static final MethodDescriptor RUN_TIME_INITIALIZATION = ofMethod(RuntimeClassInitialization.class,
+            "initializeAtRunTime", void.class, String[].class);
     private static final MethodDescriptor REGISTER_RUNTIME_SYSTEM_PROPERTIES = ofMethod(RuntimeSystemProperties.class,
             "register", void.class, String.class, String.class);
     private static final MethodDescriptor GRAALVM_VERSION_GET_CURRENT = ofMethod(GraalVM.Version.class, "getCurrent",
@@ -93,6 +95,8 @@ public class NativeImageFeatureStep {
 
         overallCatch.invokeStaticMethod(BUILD_TIME_INITIALIZATION,
                 overallCatch.marshalAsArray(String.class, overallCatch.load(""))); // empty string means initialize everything
+        overallCatch.invokeStaticMethod(RUN_TIME_INITIALIZATION,
+                overallCatch.marshalAsArray(String.class, overallCatch.load("io.smallrye.common.classloader.ClassPathUtils"))); // force runtime initialization on specific packages
 
         // Set the user.language and user.country system properties to the default locale
         // The deprecated option takes precedence for users who are already using it.
