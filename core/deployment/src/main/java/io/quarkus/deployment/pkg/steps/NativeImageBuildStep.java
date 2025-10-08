@@ -1064,6 +1064,9 @@ public class NativeImageBuildStep {
                     nativeImageArgs.add(excludeConfig.getResourceName());
                 }
 
+                // todo remove hardcoding
+                nativeImageArgs.add("--future-defaults=all");
+
                 nativeImageArgs.add(nativeImageName);
 
                 //Make sure to have the -jar as last one, as it otherwise breaks "--exclude-config"
