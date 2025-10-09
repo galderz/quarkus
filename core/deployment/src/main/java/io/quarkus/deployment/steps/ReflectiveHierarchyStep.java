@@ -243,6 +243,11 @@ public class ReflectiveHierarchyStep {
                 info.superName(), initialName,
                 processedReflectiveHierarchies,
                 unindexedClasses, finalFieldsWritable, reflectiveClass, visits));
+        for (Type interfaceType : info.interfaceTypes()) {
+            visits.addLast(() -> addReflectiveHierarchy(combinedIndexBuildItem, capabilities, reflectiveHierarchyBuildItem,
+                    source, interfaceType, processedReflectiveHierarchies, unindexedClasses, finalFieldsWritable,
+                    reflectiveClass, visits));
+        }
         for (FieldInfo field : info.fields()) {
             if (reflectiveHierarchyBuildItem.getIgnoreFieldPredicate().test(field) ||
             // skip the static fields (especially loggers)
