@@ -239,6 +239,8 @@ public class SecurityProcessor {
                     "org.bouncycastle.jcajce.provider.symmetric.AES$Mappings",
                     "org.bouncycastle.jcajce.provider.symmetric.AES$CBC",
                     "org.bouncycastle.crypto.paddings.PKCS7Padding",
+                    "org.bouncycastle.jcajce.provider.asymmetric.EC",
+                    "org.bouncycastle.jcajce.provider.asymmetric.EC$Mappings",
                     "org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi",
                     "org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi$EC",
                     "org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi$ECDSA",
