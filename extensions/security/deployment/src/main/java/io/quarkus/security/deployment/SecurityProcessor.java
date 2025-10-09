@@ -236,6 +236,7 @@ public class SecurityProcessor {
         if (curateOutcomeBuildItem.getApplicationModel().getDependencies().stream().anyMatch(
                 x -> x.getGroupId().equals("org.bouncycastle") && x.getArtifactId().startsWith("bcprov-"))) {
             reflection.produce(ReflectiveClassBuildItem.builder("org.bouncycastle.jcajce.provider.symmetric.AES",
+                    "org.bouncycastle.jcajce.provider.symmetric.AES$Mappings",
                     "org.bouncycastle.jcajce.provider.symmetric.AES$CBC",
                     "org.bouncycastle.crypto.paddings.PKCS7Padding",
                     "org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi",
