@@ -126,6 +126,7 @@ public class ConfigMappingUtils {
             additionalConstrainedClasses.produce(AdditionalConstrainedClassBuildItem.of(mappingMetadata.getClassName(),
                     classBytes));
             reflectiveClasses.produce(ReflectiveClassBuildItem.builder(mappingMetadata.getClassName())
+                    .methods() // TODO Is it always needed or only when configurations are marked as jsonproperties?
                     .reason(ConfigMappingUtils.class.getName())
                     .build());
             reflectiveMethods.produce(new ReflectiveMethodBuildItem(ConfigMappingUtils.class.getName(),
