@@ -45,7 +45,9 @@ public abstract class NativeImageFutureDefaults {
 
                         final FutureDefault futureDefaultArg = FutureDefault
                                 .valueOf(futureDefaultString.toUpperCase(Locale.ROOT).replace('-', '_'));
-                        return futureDefaultArg == futureDefault;
+                        if (futureDefaultArg == futureDefault) {
+                            return true;
+                        }
                     }
                 }
             }
