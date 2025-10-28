@@ -31,6 +31,10 @@ public abstract class NativeImageFutureDefaults {
                     int index = trimmedBuildArg.indexOf('=');
                     String[] futureDefaultStringArgs = trimmedBuildArg.substring(index + 1).split(",");
                     for (String futureDefaultString : futureDefaultStringArgs) {
+                        if ("all".equals(futureDefaultString)) {
+                            return true;
+                        }
+
                         if ("run-time-initialize-jdk".equals(futureDefaultString)) {
                             switch (futureDefault) {
                                 case RUN_TIME_INITIALIZE_SECURITY_PROVIDERS:
@@ -38,6 +42,7 @@ public abstract class NativeImageFutureDefaults {
                                     return true;
                             }
                         }
+
                         final FutureDefault futureDefaultArg = FutureDefault
                                 .valueOf(futureDefaultString.toUpperCase(Locale.ROOT).replace('-', '_'));
                         return futureDefaultArg == futureDefault;
