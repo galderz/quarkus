@@ -72,4 +72,15 @@ public abstract class NativeImageFutureDefaults {
             return isFutureDefault(FutureDefault.RUN_TIME_INITIALIZE_FILE_SYSTEM_PROVIDERS, nativeConfig);
         }
     }
+
+    public static final class RunTimeInitializeSecurityProvider extends NativeImageFutureDefaults implements BooleanSupplier {
+        public RunTimeInitializeSecurityProvider(NativeConfig nativeConfig) {
+            super(nativeConfig);
+        }
+
+        @Override
+        public boolean getAsBoolean() {
+            return isFutureDefault(FutureDefault.RUN_TIME_INITIALIZE_SECURITY_PROVIDERS, nativeConfig);
+        }
+    }
 }
