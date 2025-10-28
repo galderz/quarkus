@@ -38,6 +38,7 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageEnableModule;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageSecurityProviderBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageSystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeMinimalJavaVersionBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedPackageBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.UnsupportedOSBuildItem;
 import io.quarkus.deployment.pkg.NativeConfig;
 import io.quarkus.deployment.pkg.PackageConfig;
@@ -184,6 +185,11 @@ public class NativeImageBuildStep {
                                 .setResolvedDependency(curateOutcomeBuildItem.getApplicationModel().getAppArtifact()))
                         .setRunnerPath(nativeImageSourceJarBuildItem.getPath())
                         .build());
+    }
+
+    @BuildStep(onlyIf = NativeImageFutureDefaults.RunTimeInitializeFileSystemProvider.class)
+    RuntimeInitializedPackageBuildItem runtimeInitialized() {
+        return new RuntimeInitializedPackageBuildItem("io.smallrye.common.classloader");
     }
 
     @BuildStep
