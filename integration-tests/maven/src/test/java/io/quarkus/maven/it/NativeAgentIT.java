@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -35,8 +36,11 @@ public class NativeAgentIT extends MojoTestBase {
 
     private List<String> nativeArguments(String... initialArguments) {
         final List<String> result = new ArrayList<>(Arrays.asList(initialArguments));
-        appendArgumentIfSet("quarkus.native.container-build", result);
-        appendArgumentIfSet("quarkus.native.builder-image", result);
+        final Enumeration<Object> systemProperties = System.getProperties().keys();
+        while (systemProperties.hasMoreElements()) {
+            final String key = (String) systemProperties.nextElement();
+            appendArgumentIfSet(key, result);
+        }
         return result;
     }
 
