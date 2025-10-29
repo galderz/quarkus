@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.logging.Level;
 
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedPackageBuildItem;
+import io.quarkus.deployment.pkg.steps.NativeImageFutureDefaults;
 import org.apache.pulsar.client.impl.conf.ClientConfigurationData;
 import org.apache.pulsar.client.impl.conf.ConsumerConfigurationData;
 import org.apache.pulsar.client.impl.conf.ProducerConfigurationData;
@@ -203,4 +205,8 @@ public class SmallRyeReactiveMessagingPulsarProcessor {
         return nativeImageConfig.build();
     }
 
+    @BuildStep(onlyIf = NativeImageFutureDefaults.RunTimeInitializeSecurityProvider.class)
+    RuntimeInitializedPackageBuildItem runtimeInitializedClasses() {
+        return new RuntimeInitializedPackageBuildItem("org.apache.pulsar.common.util.SecurityUtility");
+    }
 }

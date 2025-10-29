@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import javax.security.auth.spi.LoginModule;
 
+import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedPackageBuildItem;
+import io.quarkus.deployment.pkg.steps.NativeImageFutureDefaults;
 import org.apache.kafka.clients.consumer.ConsumerInterceptor;
 import org.apache.kafka.clients.consumer.ConsumerPartitionAssignor;
 import org.apache.kafka.clients.consumer.RangeAssignor;
@@ -528,6 +530,11 @@ public class KafkaProcessor {
                 .addBeanClass(KafkaAdminClient.class)
                 .setUnremovable()
                 .build();
+    }
+
+    @BuildStep(onlyIf = NativeImageFutureDefaults.RunTimeInitializeSecurityProvider.class)
+    RuntimeInitializedPackageBuildItem runtimeInitializedClasses() {
+        return new RuntimeInitializedPackageBuildItem("org.apache.kafka.common.security.ssl");
     }
 
     // Kafka UI related stuff
