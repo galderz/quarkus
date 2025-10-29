@@ -37,6 +37,8 @@ public class NativeAgentIT extends MojoTestBase {
         final List<String> result = new ArrayList<>(Arrays.asList(initialArguments));
         appendArgumentIfSet("quarkus.native.container-build", result);
         appendArgumentIfSet("quarkus.native.builder-image", result);
+        appendArgumentIfSet("quarkus.native.container-runtime", result);
+        appendArgumentIfSet("quarkus.native.container-runtime-options", result);
         return result;
     }
 
