@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 
 import org.graalvm.nativeimage.hosted.Feature;
 import org.graalvm.nativeimage.hosted.RuntimeClassInitialization;
-import org.graalvm.nativeimage.hosted.RuntimeSystemProperties;
 
 import io.quarkus.deployment.GeneratedClassGizmo2Adaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -39,8 +38,8 @@ public class NativeImageFeatureStep {
 
     private static final MethodDesc BUILD_TIME_INITIALIZATION = MethodDesc.of(RuntimeClassInitialization.class,
             "initializeAtBuildTime", void.class, String[].class);
-    private static final MethodDesc REGISTER_RUNTIME_SYSTEM_PROPERTIES = MethodDesc.of(RuntimeSystemProperties.class,
-            "register", void.class, String.class, String.class);
+    //    private static final MethodDesc REGISTER_RUNTIME_SYSTEM_PROPERTIES = MethodDesc.of(RuntimeSystemProperties.class,
+    //            "register", void.class, String.class, String.class);
     private static final MethodDesc GRAALVM_VERSION_GET_CURRENT = MethodDesc.of(GraalVM.Version.class, "getCurrent",
             GraalVM.Version.class);
     private static final MethodDesc GRAALVM_VERSION_COMPARE_TO = MethodDesc.of(GraalVM.Version.class, "compareTo", int.class,
@@ -104,10 +103,10 @@ public class NativeImageFeatureStep {
                             LocalVar cl = b2.localVar("cl", b2.invokeVirtual(MD_Class.getClassLoader, Const.of(cc.type())));
                             if (localesBuildTimeConfig.defaultLocale().isPresent()) {
                                 Locale defaultLocale = localesBuildTimeConfig.defaultLocale().get();
-                                b2.invokeStatic(REGISTER_RUNTIME_SYSTEM_PROPERTIES, Const.of("user.language"),
-                                        Const.of(defaultLocale.getLanguage()));
-                                b2.invokeStatic(REGISTER_RUNTIME_SYSTEM_PROPERTIES, Const.of("user.country"),
-                                        Const.of(defaultLocale.getCountry()));
+                                //                                b2.invokeStatic(REGISTER_RUNTIME_SYSTEM_PROPERTIES, Const.of("user.language"),
+                                //                                        Const.of(defaultLocale.getLanguage()));
+                                //                                b2.invokeStatic(REGISTER_RUNTIME_SYSTEM_PROPERTIES, Const.of("user.country"),
+                                //                                        Const.of(defaultLocale.getCountry()));
                             } else {
                                 LocalVar graalVMVersion = b2.localVar("graalVMVersion",
                                         b2.invokeStatic(GRAALVM_VERSION_GET_CURRENT));
@@ -117,10 +116,10 @@ public class NativeImageFeatureStep {
                                                 graalVMVersion,
                                                 b2.newArray(int.class, Const.of(24), Const.of(2))),
                                         0), t3 -> {
-                                            t3.invokeStatic(REGISTER_RUNTIME_SYSTEM_PROPERTIES, Const.of("user.language"),
-                                                    Const.of("en"));
-                                            t3.invokeStatic(REGISTER_RUNTIME_SYSTEM_PROPERTIES, Const.of("user.country"),
-                                                    Const.of("US"));
+                                            //                                            t3.invokeStatic(REGISTER_RUNTIME_SYSTEM_PROPERTIES, Const.of("user.language"),
+                                            //                                                    Const.of("en"));
+                                            //                                            t3.invokeStatic(REGISTER_RUNTIME_SYSTEM_PROPERTIES, Const.of("user.country"),
+                                            //                                                    Const.of("US"));
                                         });
                             }
                             if (!runtimeInitializedClassBuildItems.isEmpty()
