@@ -271,25 +271,25 @@ public final class GraalVM {
     }
 }
 
-///*
-// * This class is only meant to be used at native image build time
-// */
-//@Delete
-//@TargetClass(GraalVM.class)
-//final class Target_io_quarkus_runtime_graal_GraalVM {
-//}
-//
-//@Delete
-//@TargetClass(GraalVM.Distribution.class)
-//final class Target_io_quarkus_runtime_graal_GraalVM_Distribution {
-//}
-//
-//@Delete
-//@TargetClass(GraalVM.Version.class)
-//final class Target_io_quarkus_runtime_graal_GraalVM_Version {
-//}
-//
-//@Delete
-//@TargetClass(GraalVM.VersionParseHelper.class)
-//final class Target_io_quarkus_runtime_graal_GraalVM_VersionParseHelper {
-//}
+/*
+ * This class is only meant to be used at native image build time
+ */
+@Delete
+@TargetClass(GraalVM.class)
+final class Target_io_quarkus_runtime_graal_GraalVM {
+}
+
+@Delete
+@TargetClass(GraalVM.Distribution.class)
+final class Target_io_quarkus_runtime_graal_GraalVM_Distribution {
+}
+
+@Delete
+@TargetClass(GraalVM.Version.class)
+final class Target_io_quarkus_runtime_graal_GraalVM_Version {
+}
+
+@Delete
+@TargetClass(GraalVM.VersionParseHelper.class)
+final class Target_io_quarkus_runtime_graal_GraalVM_VersionParseHelper {
+}
