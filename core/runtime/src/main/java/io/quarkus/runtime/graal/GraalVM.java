@@ -9,8 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.graalvm.nativeimage.Platforms;
-import org.graalvm.nativeimage.Platform;
 import org.jboss.logging.Logger;
 
 import com.oracle.svm.core.annotate.Delete;
@@ -22,11 +20,9 @@ import com.oracle.svm.core.annotate.TargetClass;
  * This allows Quarkus to determine the GraalVM version used at build time without depending on
  * {@code org.graalvm.polyglot:polyglot}.
  */
-@Platforms(Platform.HOSTED_ONLY.class)
 public final class GraalVM {
     private static final Logger log = Logger.getLogger(GraalVM.class);
 
-    @Platforms(Platform.HOSTED_ONLY .class)
     static final class VersionParseHelper {
 
         private static final String VNUM = "(?<VNUM>[1-9][0-9]*(?:\\.(?:0|[1-9][0-9]*))*)";
@@ -90,7 +86,6 @@ public final class GraalVM {
 
     }
 
-    @Platforms(Platform.HOSTED_ONLY.class)
     public static class Version implements Comparable<Version> {
 
         public static final Version VERSION_23_1_0 = new Version("GraalVM 23.1.0", "23.1.0", "21", Distribution.GRAALVM);
@@ -269,10 +264,32 @@ public final class GraalVM {
         }
     }
 
-    @Platforms(Platform.HOSTED_ONLY.class)
     public enum Distribution {
         GRAALVM,
         LIBERICA,
         MANDREL;
     }
+}
+
+/*
+ * This class is only meant to be used at native image build time
+ */
+@Delete
+@TargetClass(GraalVM.class)
+final class Target_io_quarkus_runtime_graal_GraalVM {
+}
+
+@Delete
+@TargetClass(GraalVM.Distribution.class)
+final class Target_io_quarkus_runtime_graal_GraalVM_Distribution {
+}
+
+@Delete
+@TargetClass(GraalVM.Version.class)
+final class Target_io_quarkus_runtime_graal_GraalVM_Version {
+}
+
+@Delete
+@TargetClass(GraalVM.VersionParseHelper.class)
+final class Target_io_quarkus_runtime_graal_GraalVM_VersionParseHelper {
 }
