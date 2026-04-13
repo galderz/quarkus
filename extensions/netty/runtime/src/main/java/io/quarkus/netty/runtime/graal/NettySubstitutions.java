@@ -571,7 +571,7 @@ final class Alias_PemReader {
 /**
  * If BouncyCastle is not on the classpath, we must not try to read the PEM file using the BouncyCatle PEM reader.
  */
-@TargetClass(className = "io.netty.handler.ssl.SslContext", onlyWith = IsBouncyNotThere.class)
+@TargetClass(className = "io.netty.handler.ssl.SslContext", onlyWith = { IsBouncyNotThere.class, IsAppLayerBuild.class })
 final class Target_SslContext {
 
     @Substitute
@@ -613,6 +613,14 @@ final class Target_io_netty_util_internal_shaded_org_jctools_util_UnsafeRefArray
     @Alias
     @RecomputeFieldValue(kind = RecomputeFieldValue.Kind.ArrayIndexShift, declClass = Object[].class)
     public static int LONG_ELEMENT_SHIFT;
+}
+
+class IsAppLayerBuild implements BooleanSupplier {
+
+    @Override
+    public boolean getAsBoolean() {
+        return !Boolean.getBoolean("quarkus.native.base-layer-build");
+    }
 }
 
 class IsBouncyNotThere implements BooleanSupplier {
