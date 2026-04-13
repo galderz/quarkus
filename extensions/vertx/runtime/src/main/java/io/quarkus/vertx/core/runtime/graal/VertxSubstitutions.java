@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BooleanSupplier;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
@@ -70,7 +71,7 @@ final class Target_io_vertx_core_net_OpenSSLEngineOptions {
 }
 
 @SuppressWarnings("rawtypes")
-@TargetClass(className = "io.vertx.core.eventbus.impl.clustered.ClusteredEventBus")
+@TargetClass(className = "io.vertx.core.eventbus.impl.clustered.ClusteredEventBus", onlyWith = IsVertxAppLayerBuild.class)
 final class Target_io_vertx_core_eventbus_impl_clustered_ClusteredEventBusClusteredEventBus {
 
     @Substitute
@@ -195,6 +196,14 @@ final class Target_io_vertx_core_spi_tls_DefaultJDKCipherSuite {
     @Alias
     static List<String> get() {
         return null;
+    }
+}
+
+class IsVertxAppLayerBuild implements BooleanSupplier {
+
+    @Override
+    public boolean getAsBoolean() {
+        return !Boolean.getBoolean("quarkus.native.base-layer-build");
     }
 }
 
