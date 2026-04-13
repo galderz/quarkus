@@ -11,9 +11,6 @@ import java.util.stream.Collectors;
 
 import org.jboss.logging.Logger;
 
-import com.oracle.svm.core.annotate.Delete;
-import com.oracle.svm.core.annotate.TargetClass;
-
 /**
  * Implements version parsing from the {@code com.oracle.svm.core.VM} property inspired by
  * {@code org.graalvm.home.impl.DefaultHomeFinder}.
