@@ -79,11 +79,14 @@ public class Quarkus {
             ApplicationLifecycleManager.run(application, quarkusApplication, exitHandler, args);
             return;
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
             //ignore, this happens when running in dev mode
         } catch (RuntimeException | Error e) {
+            e.printStackTrace();
             handleReflectiveInvocationIssue(exitHandler, e);
             return;
         } catch (Throwable t) {
+            t.printStackTrace();
             handleReflectiveInvocationIssue(exitHandler, new UndeclaredThrowableException(t));
             return;
         }
