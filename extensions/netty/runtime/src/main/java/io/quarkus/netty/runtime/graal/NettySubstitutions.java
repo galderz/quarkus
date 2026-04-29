@@ -67,7 +67,7 @@ import io.quarkus.netty.runtime.EmptyByteBufStub;
 /**
  * This substitution avoid having loggers added to the build
  */
-@TargetClass(className = "io.netty.util.internal.logging.InternalLoggerFactory")
+@TargetClass(className = "io.netty.util.internal.logging.InternalLoggerFactory", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_util_internal_logging_InternalLoggerFactory {
 
     @Substitute
@@ -79,7 +79,7 @@ final class Target_io_netty_util_internal_logging_InternalLoggerFactory {
 // SSL
 // This whole section is mostly about removing static analysis references to openssl/tcnative
 
-@TargetClass(className = "io.netty.handler.ssl.SslProvider")
+@TargetClass(className = "io.netty.handler.ssl.SslProvider", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_SslProvider {
     @Substitute
     public static boolean isAlpnSupported(final SslProvider provider) {
@@ -95,7 +95,7 @@ final class Target_io_netty_handler_ssl_SslProvider {
     }
 }
 
-@TargetClass(className = "io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator")
+@TargetClass(className = "io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_JdkAlpnApplicationProtocolNegotiator {
     @Alias
     static boolean isAlpnSupported() {
@@ -106,7 +106,7 @@ final class Target_io_netty_handler_ssl_JdkAlpnApplicationProtocolNegotiator {
 /**
  * Hardcode io.netty.handler.ssl.OpenSsl as non-available
  */
-@TargetClass(className = "io.netty.handler.ssl.OpenSsl")
+@TargetClass(className = "io.netty.handler.ssl.OpenSsl", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_OpenSsl {
 
     @Alias
@@ -162,7 +162,7 @@ final class Target_io_netty_handler_ssl_OpenSsl {
     }
 }
 
-@TargetClass(className = "io.netty.handler.ssl.JdkSslServerContext")
+@TargetClass(className = "io.netty.handler.ssl.JdkSslServerContext", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_JdkSslServerContext {
     @Alias
     Target_io_netty_handler_ssl_JdkSslServerContext(Provider provider,
@@ -176,7 +176,7 @@ final class Target_io_netty_handler_ssl_JdkSslServerContext {
     }
 }
 
-@TargetClass(className = "io.netty.handler.ssl.JdkSslClientContext")
+@TargetClass(className = "io.netty.handler.ssl.JdkSslClientContext", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_JdkSslClientContext {
 
     @Alias
@@ -190,7 +190,7 @@ final class Target_io_netty_handler_ssl_JdkSslClientContext {
     }
 }
 
-@TargetClass(className = "io.netty.handler.ssl.SslHandler$SslEngineType")
+@TargetClass(className = "io.netty.handler.ssl.SslHandler$SslEngineType", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_SslHandler$SslEngineType {
 
     @Alias
@@ -202,7 +202,7 @@ final class Target_io_netty_handler_ssl_SslHandler$SslEngineType {
     }
 }
 
-@TargetClass(className = "io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator$AlpnWrapper")
+@TargetClass(className = "io.netty.handler.ssl.JdkAlpnApplicationProtocolNegotiator$AlpnWrapper", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_JdkAlpnApplicationProtocolNegotiator_AlpnWrapper {
     @Substitute
     public SSLEngine wrapSslEngine(SSLEngine engine, ByteBufAllocator alloc,
@@ -213,7 +213,7 @@ final class Target_io_netty_handler_ssl_JdkAlpnApplicationProtocolNegotiator_Alp
 
 }
 
-@TargetClass(className = "io.netty.handler.ssl.JdkAlpnSslEngine")
+@TargetClass(className = "io.netty.handler.ssl.JdkAlpnSslEngine", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_JdkAlpnSslEngine {
     @Alias
     Target_io_netty_handler_ssl_JdkAlpnSslEngine(final SSLEngine engine,
@@ -222,7 +222,7 @@ final class Target_io_netty_handler_ssl_JdkAlpnSslEngine {
     }
 }
 
-@TargetClass(className = "io.netty.handler.ssl.ResumptionController")
+@TargetClass(className = "io.netty.handler.ssl.ResumptionController", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_ResumptionController {
 
     @Alias
@@ -231,7 +231,7 @@ final class Target_io_netty_handler_ssl_ResumptionController {
     }
 }
 
-@TargetClass(className = "io.netty.handler.ssl.SslContext")
+@TargetClass(className = "io.netty.handler.ssl.SslContext", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_SslContext {
 
     @Substitute
@@ -275,14 +275,14 @@ final class Target_io_netty_handler_ssl_SslContext {
 
 }
 
-@TargetClass(className = "io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator")
+@TargetClass(className = "io.netty.handler.ssl.JdkDefaultApplicationProtocolNegotiator", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_JdkDefaultApplicationProtocolNegotiator {
 
     @Alias
     public static Target_io_netty_handler_ssl_JdkDefaultApplicationProtocolNegotiator INSTANCE;
 }
 
-@TargetClass(className = "io.netty.handler.ssl.JdkSslContext")
+@TargetClass(className = "io.netty.handler.ssl.JdkSslContext", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_ssl_JdkSslContext {
 
     @Substitute
@@ -341,7 +341,7 @@ final class Target_io_netty_handler_ssl_JdkSslContext {
  * This one only prints exceptions otherwise we get a useless bogus
  * exception message: https://github.com/eclipse-vertx/vert.x/issues/1657
  */
-@TargetClass(className = "io.netty.bootstrap.AbstractBootstrap")
+@TargetClass(className = "io.netty.bootstrap.AbstractBootstrap", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_bootstrap_AbstractBootstrap {
 
     @Alias
@@ -401,7 +401,7 @@ final class Holder_io_netty_util_concurrent_ScheduledFutureTask {
     static final long START_TIME = System.nanoTime();
 }
 
-@TargetClass(className = "io.netty.util.concurrent.AbstractScheduledEventExecutor")
+@TargetClass(className = "io.netty.util.concurrent.AbstractScheduledEventExecutor", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_util_concurrent_AbstractScheduledEventExecutor {
 
     // The START_TIME field is kept but not used.
@@ -418,7 +418,7 @@ final class Target_io_netty_util_concurrent_AbstractScheduledEventExecutor {
     }
 }
 
-@TargetClass(className = "io.netty.channel.ChannelHandlerMask")
+@TargetClass(className = "io.netty.channel.ChannelHandlerMask", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_channel_ChannelHandlerMask {
 
     // Netty tries to self-optimized itself, but it requires lots of reflection. We disable this behavior and avoid
@@ -429,7 +429,7 @@ final class Target_io_netty_channel_ChannelHandlerMask {
     }
 }
 
-@TargetClass(className = "io.netty.util.internal.NativeLibraryLoader")
+@TargetClass(className = "io.netty.util.internal.NativeLibraryLoader", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_util_internal_NativeLibraryLoader {
 
     // This method can trick GraalVM into thinking that Classloader#defineClass is getting called
@@ -483,7 +483,7 @@ final class Target_io_netty_buffer_EmptyByteBuf {
 
 }
 
-@TargetClass(className = "io.netty.handler.codec.http.HttpContentDecompressor")
+@TargetClass(className = "io.netty.handler.codec.http.HttpContentDecompressor", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_codec_http_HttpContentDecompressor {
 
     @Alias
@@ -516,7 +516,7 @@ final class Target_io_netty_handler_codec_http_HttpContentDecompressor {
     }
 }
 
-@TargetClass(className = "io.netty.handler.codec.http2.DelegatingDecompressorFrameListener")
+@TargetClass(className = "io.netty.handler.codec.http2.DelegatingDecompressorFrameListener", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_codec_http2_DelegatingDecompressorFrameListener {
 
     @Alias
@@ -545,7 +545,7 @@ final class Target_io_netty_handler_codec_http2_DelegatingDecompressorFrameListe
     }
 }
 
-@TargetClass(className = "io.netty.handler.ssl.SslHandler")
+@TargetClass(className = "io.netty.handler.ssl.SslHandler", onlyWith = IsAppLayerBuild.class)
 final class Target_SslHandler {
 
     @Substitute
@@ -554,7 +554,7 @@ final class Target_SslHandler {
     }
 }
 
-@TargetClass(className = "io.netty.handler.ssl.PemReader")
+@TargetClass(className = "io.netty.handler.ssl.PemReader", onlyWith = IsAppLayerBuild.class)
 final class Alias_PemReader {
 
     @Alias
@@ -607,7 +607,7 @@ final class Target_SslContext {
     }
 }
 
-@TargetClass(className = "io.netty.util.internal.shaded.org.jctools.util.UnsafeLongArrayAccess")
+@TargetClass(className = "io.netty.util.internal.shaded.org.jctools.util.UnsafeLongArrayAccess", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_util_internal_shaded_org_jctools_util_UnsafeRefArrayAccess {
 
     @Alias

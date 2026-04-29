@@ -36,7 +36,7 @@ import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.spi.resolver.ResolverProvider;
 import io.vertx.core.spi.transport.Transport;
 
-@TargetClass(className = "io.vertx.core.impl.VertxBuilder")
+@TargetClass(className = "io.vertx.core.impl.VertxBuilder", onlyWith = IsVertxAppLayerBuild.class)
 final class Target_io_vertx_core_impl_VertxBuilder {
     @Substitute
     public static Transport nativeTransport() {
@@ -47,7 +47,7 @@ final class Target_io_vertx_core_impl_VertxBuilder {
 /**
  * This substitution forces the usage of the blocking DNS resolver
  */
-@TargetClass(className = "io.vertx.core.spi.resolver.ResolverProvider")
+@TargetClass(className = "io.vertx.core.spi.resolver.ResolverProvider", onlyWith = IsVertxAppLayerBuild.class)
 final class TargetResolverProvider {
 
     @Substitute
@@ -56,7 +56,7 @@ final class TargetResolverProvider {
     }
 }
 
-@TargetClass(className = "io.vertx.core.net.OpenSSLEngineOptions")
+@TargetClass(className = "io.vertx.core.net.OpenSSLEngineOptions", onlyWith = IsVertxAppLayerBuild.class)
 final class Target_io_vertx_core_net_OpenSSLEngineOptions {
 
     @Substitute
@@ -142,7 +142,7 @@ final class Target_io_vertx_core_eventbus_impl_clustered_ClusteredEventBusCluste
     }
 }
 
-@TargetClass(className = "io.vertx.core.spi.tls.DefaultSslContextFactory")
+@TargetClass(className = "io.vertx.core.spi.tls.DefaultSslContextFactory", onlyWith = IsVertxAppLayerBuild.class)
 final class Target_DefaultSslContextFactory {
 
     @Alias
@@ -191,7 +191,7 @@ final class Target_DefaultSslContextFactory {
     }
 }
 
-@TargetClass(className = "io.vertx.core.spi.tls.DefaultJDKCipherSuite")
+@TargetClass(className = "io.vertx.core.spi.tls.DefaultJDKCipherSuite", onlyWith = IsVertxAppLayerBuild.class)
 final class Target_io_vertx_core_spi_tls_DefaultJDKCipherSuite {
     @Alias
     static List<String> get() {

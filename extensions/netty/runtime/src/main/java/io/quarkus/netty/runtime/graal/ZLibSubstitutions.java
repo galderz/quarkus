@@ -12,7 +12,7 @@ import io.netty.handler.codec.compression.ZlibWrapper;
 /**
  * This substitution avoid having jcraft zlib added to the build
  */
-@TargetClass(className = "io.netty.handler.codec.compression.ZlibCodecFactory")
+@TargetClass(className = "io.netty.handler.codec.compression.ZlibCodecFactory", onlyWith = IsAppLayerBuild.class)
 final class Target_io_netty_handler_codec_compression_ZlibCodecFactory {
 
     @Substitute

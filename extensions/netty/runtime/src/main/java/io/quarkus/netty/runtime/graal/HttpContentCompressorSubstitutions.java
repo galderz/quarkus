@@ -11,7 +11,8 @@ import io.netty.channel.ChannelHandlerContext;
 public class HttpContentCompressorSubstitutions {
 }
 
-@TargetClass(className = "io.netty.handler.codec.compression.ZstdEncoder", onlyWith = IsZstdAbsent.class)
+@TargetClass(className = "io.netty.handler.codec.compression.ZstdEncoder", onlyWith = { IsZstdAbsent.class,
+        IsAppLayerBuild.class })
 final class Target_io_netty_handler_codec_compression_ZstdEncoder {
 
     @Substitute
@@ -31,7 +32,8 @@ final class Target_io_netty_handler_codec_compression_ZstdEncoder {
 }
 
 @Substitute
-@TargetClass(className = "io.netty.handler.codec.compression.ZstdConstants", onlyWith = IsZstdAbsent.class)
+@TargetClass(className = "io.netty.handler.codec.compression.ZstdConstants", onlyWith = { IsZstdAbsent.class,
+        IsAppLayerBuild.class })
 final class Target_io_netty_handler_codec_compression_ZstdConstants {
 
     // The constants make <clinit> calls to com.github.luben.zstd.Zstd so we cut links with that substitution.
