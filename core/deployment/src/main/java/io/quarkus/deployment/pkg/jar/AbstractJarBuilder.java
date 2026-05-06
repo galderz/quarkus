@@ -183,11 +183,22 @@ public abstract class AbstractJarBuilder<T extends BuildItem> implements JarBuil
             Map<String, List<byte[]>> concatenatedEntries,
             Predicate<String> ignoredEntriesPredicate)
             throws IOException {
+        copyApplicationContent(archiveCreator, concatenatedEntries, ignoredEntriesPredicate, Set.of());
+    }
+
+    protected void copyApplicationContent(ArchiveCreator archiveCreator,
+            Map<String, List<byte[]>> concatenatedEntries,
+            Predicate<String> ignoredEntriesPredicate,
+            Set<Path> jarsWithEmbeddedTransforms)
+            throws IOException {
 
         // transformed classes first (highest priority - these replace the original classes)
-        for (Set<TransformedClassesBuildItem.TransformedClass> transformed : transformedClasses
-                .getTransformedClassesByJar().values()) {
-            for (TransformedClassesBuildItem.TransformedClass i : transformed) {
+        for (Entry<Path, Set<TransformedClassesBuildItem.TransformedClass>> entry : transformedClasses
+                .getTransformedClassesByJar().entrySet()) {
+            if (jarsWithEmbeddedTransforms.contains(entry.getKey())) {
+                continue;
+            }
+            for (TransformedClassesBuildItem.TransformedClass i : entry.getValue()) {
                 if (i.getData() != null) {
                     archiveCreator.addFile(i.getData(), i.getFileName());
                 }
