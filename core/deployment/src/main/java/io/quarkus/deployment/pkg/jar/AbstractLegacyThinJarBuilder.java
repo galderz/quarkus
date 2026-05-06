@@ -74,8 +74,9 @@ public abstract class AbstractLegacyThinJarBuilder<T extends BuildItem> extends 
 
             Predicate<String> ignoredEntriesPredicate = getThinJarIgnoredEntriesPredicate(packageConfig);
 
+            Set<Path> jarsWithEmbeddedTransforms = new HashSet<>();
             copyLibraryJars(archiveCreator, outputTarget, transformedClasses, libDir, classPath, appDeps, services,
-                    ignoredEntriesPredicate, removedArtifactKeys, treeShakeResult);
+                    ignoredEntriesPredicate, removedArtifactKeys, treeShakeResult, jarsWithEmbeddedTransforms);
 
             ResolvedDependency appArtifact = curateOutcome.getApplicationModel().getAppArtifact();
             // the manifest needs to be the first entry in the jar, otherwise JarInputStream does not work properly
@@ -85,7 +86,7 @@ public abstract class AbstractLegacyThinJarBuilder<T extends BuildItem> extends 
             attachRunnerMetadata(manifest, mainClass.getClassName(), classPath.toString(), jvmRequirements);
             archiveCreator.addManifest(manifest);
 
-            copyApplicationContent(archiveCreator, services, ignoredEntriesPredicate);
+            copyApplicationContent(archiveCreator, services, ignoredEntriesPredicate, jarsWithEmbeddedTransforms);
 
             writeConcatenatedEntries(archiveCreator, services);
         }
@@ -96,7 +97,7 @@ public abstract class AbstractLegacyThinJarBuilder<T extends BuildItem> extends 
             TransformedClassesBuildItem transformedClasses, Path libDir,
             StringBuilder classPath, Collection<ResolvedDependency> appDeps, Map<String, List<byte[]>> services,
             Predicate<String> ignoredEntriesPredicate, Set<ArtifactKey> removedDependencies,
-            JarTreeShakeBuildItem treeShakeResult) throws IOException {
+            JarTreeShakeBuildItem treeShakeResult, Set<Path> jarsWithEmbeddedTransforms) throws IOException {
         for (ResolvedDependency appDep : appDeps) {
 
             // Exclude files that are not jars (typically, we can have XML files here, see https://github.com/quarkusio/quarkus/issues/2852)
@@ -155,7 +156,22 @@ public abstract class AbstractLegacyThinJarBuilder<T extends BuildItem> extends 
                     if (removedEntries.isEmpty()) {
                         JarUnsigner.unsignJar(resolvedDep, targetPath);
                     } else {
-                        JarUnsigner.unsignJar(resolvedDep, targetPath, Predicate.not(removedEntries::contains));
+                        Map<String, byte[]> additionalEntries = Map.of();
+                        Set<TransformedClassesBuildItem.TransformedClass> transformedClassesFromThisArchive = transformedClasses
+                                .getTransformedClassesByJar().get(resolvedDep);
+                        if (transformedClassesFromThisArchive != null) {
+                            additionalEntries = new HashMap<>();
+                            for (TransformedClassesBuildItem.TransformedClass tc : transformedClassesFromThisArchive) {
+                                if (tc.getData() != null) {
+                                    additionalEntries.put(tc.getFileName(), tc.getData());
+                                }
+                            }
+                            if (!additionalEntries.isEmpty()) {
+                                jarsWithEmbeddedTransforms.add(resolvedDep);
+                            }
+                        }
+                        JarUnsigner.unsignJar(resolvedDep, targetPath, Predicate.not(removedEntries::contains),
+                                additionalEntries);
                     }
                 } else {
                     // This case can happen when we are building a jar from inside the Quarkus repository

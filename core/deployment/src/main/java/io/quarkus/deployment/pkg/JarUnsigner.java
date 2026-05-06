@@ -99,6 +99,20 @@ public final class JarUnsigner {
      * @throws IOException if an I/O error occurs
      */
     public static void unsignJar(Path jarPath, Path targetPath, Predicate<String> includePredicate) throws IOException {
+        unsignJar(jarPath, targetPath, includePredicate, Map.of());
+    }
+
+    /**
+     * Unsigns a jar file by removing the signature entries, and injects additional entries into the target jar.
+     *
+     * @param jarPath the path to the jar file to unsign
+     * @param targetPath the path to the target jar file
+     * @param includePredicate a predicate to determine which entries to include in the target jar
+     * @param additionalEntries entries to add to the target jar (e.g. transformed bytecode replacing filtered originals)
+     * @throws IOException if an I/O error occurs
+     */
+    public static void unsignJar(Path jarPath, Path targetPath, Predicate<String> includePredicate,
+            Map<String, byte[]> additionalEntries) throws IOException {
         // Reusing buffer for performance reasons
         byte[] buffer = new byte[10000];
         try (JarFile in = new JarFile(jarPath.toFile(), false)) {
@@ -144,6 +158,13 @@ public final class JarUnsigner {
                     } else {
                         log.debugf("Removed %s from %s", entryName, jarPath);
                     }
+                }
+                for (Map.Entry<String, byte[]> additional : additionalEntries.entrySet()) {
+                    JarEntry newEntry = new JarEntry(additional.getKey());
+                    newEntry.setTime(0);
+                    out.putNextEntry(newEntry);
+                    out.write(additional.getValue());
+                    out.closeEntry();
                 }
             }
             // let's make sure we keep the original timestamp
