@@ -25,6 +25,7 @@ import com.oracle.svm.core.annotate.TargetClass;
 import com.oracle.svm.core.annotate.TargetElement;
 
 import io.smallrye.common.constraint.Assert;
+import io.smallrye.config.ConfigMappingContext;
 import io.smallrye.config.ConfigMappingInterface;
 import io.smallrye.config.ConfigMappingLoader;
 import io.smallrye.config.ConfigMappingMetadata;
@@ -46,6 +47,32 @@ final class Substitutions {
         private static Class<?> defineClass(final Class<?> parent, final String className, final byte[] classBytes) {
             return null;
         }
+
+        @Alias
+        private static ClassValue<Target_ConfigMappingLoader$ConfigMappingImplementation> CACHE;
+
+        /**
+         * Use invoke() instead of invokeExact() to avoid WrongMethodTypeException
+         * in layered native image builds where MethodType reference equality
+         * across layers is not guaranteed.
+         */
+        @SuppressWarnings("unchecked")
+        @Substitute
+        static <T> T configMappingObject(Class<T> interfaceType, ConfigMappingContext configMappingContext) {
+            try {
+                return (T) CACHE.get(interfaceType)
+                        .constructor()
+                        .invoke(configMappingContext);
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @TargetClass(className = "io.smallrye.config.ConfigMappingLoader$ConfigMappingImplementation")
+    static final class Target_ConfigMappingLoader$ConfigMappingImplementation {
+        @Alias
+        native java.lang.invoke.MethodHandle constructor();
     }
 
     @TargetClass(ConfigMappingInterface.class)
