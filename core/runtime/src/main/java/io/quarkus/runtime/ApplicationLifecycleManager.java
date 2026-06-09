@@ -230,7 +230,48 @@ public class ApplicationLifecycleManager {
                     } catch (Exception diag) {
                         System.err.println("[RT-DIAG] error: " + diag);
                     }
+                    System.err.println("[RT-DIAG] about to call applicationLogger.errorv");
+                    System.err.flush();
+
                     applicationLogger.errorv(t, "Failed to start application");
+                    System.err.println("[RT-DIAG] errorv returned");
+                    System.err.println("[RT-DIAG] ConsoleHandler level="
+                            + InitialConfigurator.DELAYED_HANDLER.getHandlers()[0].getLevel());
+                    System.err.println("[RT-DIAG] ConsoleHandler formatter="
+                            + InitialConfigurator.DELAYED_HANDLER.getHandlers()[0].getFormatter());
+                    System.err.println("[RT-DIAG] DELAYED_HANDLER level=" + InitialConfigurator.DELAYED_HANDLER.getLevel());
+
+                    try {
+                        System.err.println("[RT-DIAG] about to try direct console handler");
+                        java.util.logging.LogRecord testRecord = new java.util.logging.LogRecord(java.util.logging.Level.SEVERE,
+                                "TEST DIRECT CONSOLE HANDLER");
+                        System.err.println("[RT-DIAG] testRecord=" + testRecord);
+                        InitialConfigurator.DELAYED_HANDLER.getHandlers()[0].publish(testRecord);
+                        System.err.flush();
+
+                        System.err.println("[RT-DIAG] direct publish done");
+                        System.err.flush();
+
+                        System.err.println("[RT-DIAG] ConsoleHandler output stream=" +
+                                ((java.util.logging.StreamHandler) InitialConfigurator.DELAYED_HANDLER.getHandlers()[0])
+                                        .getClass().getSuperclass().getName());
+                        System.err.println("[RT-DIAG] System.err identity=" + System.identityHashCode(System.err));
+                        System.err.flush();
+
+                        java.lang.reflect.Field outputField = java.util.logging.StreamHandler.class.getDeclaredField("output");
+                        outputField.setAccessible(true);
+                        Object handlerStream = outputField.get(InitialConfigurator.DELAYED_HANDLER.getHandlers()[0]);
+                        System.err
+                                .println("[RT-DIAG] ConsoleHandler stream identity=" + System.identityHashCode(handlerStream));
+                        System.err.println("[RT-DIAG] ConsoleHandler stream == System.err? " + (handlerStream == System.err));
+                        System.err.flush();
+                    } catch (Throwable e) {
+                        System.err.println("[RT-DIAG] error in either direct console handler or checking stream: " + e);
+                        System.err.flush();
+                        e.printStackTrace();
+                        System.err.flush();
+                    }
+
                     ensureConsoleLogsDrained();
                     InitialConfigurator.DELAYED_HANDLER.close();
                 }
