@@ -230,6 +230,19 @@ public class ApplicationLifecycleManager {
                     } catch (Exception diag) {
                         System.err.println("[RT-DIAG] error: " + diag);
                     }
+                    System.err.println("[RT-DIAG] Locale.getDefault()=" + java.util.Locale.getDefault());
+                    System.err.println("[RT-DIAG] user.language=" + System.getProperty("user.language"));
+                    System.err.println("[RT-DIAG] user.country=" + System.getProperty("user.country"));
+                    try {
+                        String testDate = String.format(java.util.Locale.getDefault(), "%tc", new java.util.Date());
+                        System.err.println("[RT-DIAG] Date format OK: " + testDate);
+                    } catch (Throwable localeErr) {
+                        System.err.println("[RT-DIAG] Date format FAILED: " + localeErr);
+                    }
+                    System.err.flush();
+                    System.err.println("[RT-DIAG] about to call applicationLogger.errorv");
+                    System.err.flush();
+
                     System.err.println("[RT-DIAG] about to call applicationLogger.errorv");
                     System.err.flush();
 
@@ -240,6 +253,21 @@ public class ApplicationLifecycleManager {
                     System.err.println("[RT-DIAG] ConsoleHandler formatter="
                             + InitialConfigurator.DELAYED_HANDLER.getHandlers()[0].getFormatter());
                     System.err.println("[RT-DIAG] DELAYED_HANDLER level=" + InitialConfigurator.DELAYED_HANDLER.getLevel());
+
+                    try {
+                        // Test if ErrorManager.reported is already true by calling it directly
+                        java.util.logging.Handler ch2 = InitialConfigurator.DELAYED_HANDLER.getHandlers()[0];
+                        java.io.ByteArrayOutputStream testBaos = new java.io.ByteArrayOutputStream();
+                        java.io.PrintStream oldErr = System.err;
+                        System.setErr(new java.io.PrintStream(testBaos));
+                        ch2.getErrorManager().error("TEST_ERROR_MANAGER", null, 0);
+                        System.setErr(oldErr);
+                        String emOutput = testBaos.toString();
+                        System.err.println("[RT-DIAG] ErrorManager test output: [" + emOutput.trim() + "]");
+                        System.err.println("[RT-DIAG] ErrorManager already reported (inferred)=" + emOutput.isEmpty());
+                    } catch (Throwable emErr) {
+                        System.err.println("[RT-DIAG] ErrorManager check failed: " + emErr);
+                    }
 
                     try {
                         System.err.println("[RT-DIAG] about to try direct console handler");
