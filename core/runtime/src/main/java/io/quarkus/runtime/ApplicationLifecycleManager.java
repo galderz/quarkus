@@ -206,8 +206,33 @@ public class ApplicationLifecycleManager {
                         && !StringUtil.isNullOrEmpty(rootCause.getMessage())) {
                     System.err.println(rootCause.getMessage());
                 } else {
+                    // Runtime diagnostics for logging provider
+                    try {
+                        Class<?> p = Class.forName("org.jboss.logging.LoggerProviders");
+                        java.lang.reflect.Field f = p.getDeclaredField("PROVIDER");
+                        f.setAccessible(true);
+                        System.err.println("[RT-DIAG] LoggerProviders.PROVIDER=" + f.get(null).getClass().getName());
+                        System.err.println(
+                                "[RT-DIAG] LogManager=" + java.util.logging.LogManager.getLogManager().getClass().getName());
+                        System.err
+                                .println("[RT-DIAG] DELAYED_HANDLER queued=" + InitialConfigurator.DELAYED_HANDLER.getLevel());
+                        System.err.println(
+                                "[RT-DIAG] DELAYED_HANDLER activated=" + InitialConfigurator.DELAYED_HANDLER.isActivated());
+                        System.err.println("[RT-DIAG] DELAYED_HANDLER handlers="
+                                + java.util.Arrays.toString(InitialConfigurator.DELAYED_HANDLER.getHandlers()));
+                        java.util.logging.Logger rootJul = java.util.logging.LogManager.getLogManager().getLogger("");
+                        System.err.println(
+                                "[RT-DIAG] JUL root logger=" + (rootJul != null ? rootJul.getClass().getName() : "null"));
+                        if (rootJul != null) {
+                            System.err
+                                    .println("[RT-DIAG] JUL root handlers=" + java.util.Arrays.toString(rootJul.getHandlers()));
+                        }
+                    } catch (Exception diag) {
+                        System.err.println("[RT-DIAG] error: " + diag);
+                    }
                     applicationLogger.errorv(t, "Failed to start application");
                     ensureConsoleLogsDrained();
+                    InitialConfigurator.DELAYED_HANDLER.close();
                 }
             }
             stateLock.lock();
