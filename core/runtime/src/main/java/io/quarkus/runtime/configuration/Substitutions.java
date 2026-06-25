@@ -46,6 +46,40 @@ final class Substitutions {
         private static Class<?> defineClass(final Class<?> parent, final String className, final byte[] classBytes) {
             return null;
         }
+
+        // Use invoke() instead of invokeExact() to avoid WrongMethodTypeException in layered native images.
+        // In layered builds, MethodType reference equality across layers is not guaranteed,
+        // causing invokeExact()'s strict type check to fail.
+        @Substitute
+        static <T> T configMappingObject(final Class<T> interfaceType,
+                final io.smallrye.config.ConfigMappingContext configMappingContext) {
+            try {
+                Target_ConfigMappingImplementation impl = Target_ConfigMappingLoader2.CACHE.get(interfaceType);
+                return interfaceType.cast(impl.constructor().invoke(configMappingContext));
+            } catch (NoSuchMethodException e) {
+                throw new NoSuchMethodError(e.getMessage());
+            } catch (IllegalAccessException e) {
+                throw new IllegalAccessError(e.getMessage());
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @TargetClass(value = ConfigMappingLoader.class, innerClass = "ConfigMappingImplementation")
+    static final class Target_ConfigMappingImplementation {
+        @Alias
+        public java.lang.invoke.MethodHandle constructor() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @TargetClass(ConfigMappingLoader.class)
+    static final class Target_ConfigMappingLoader2 {
+        @Alias
+        static ClassValue<Target_ConfigMappingImplementation> CACHE = null;
     }
 
     @TargetClass(ConfigMappingInterface.class)
