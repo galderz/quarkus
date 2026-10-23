@@ -78,10 +78,17 @@ public class QuarkusEntryPoint {
     static Path resolveJarPath(Class<?> entryPointClass) throws URISyntaxException {
         URL location = entryPointClass.getProtectionDomain().getCodeSource().getLocation();
         if (location != null) {
-            return Path.of(location.toURI());
+            Path path = Path.of(location.toURI());
+            // When the class is AOT-compiled into libjvm.so (Crema), getCodeSource()
+            // returns the executable path (e.g., the java binary) instead of the jar.
+            // In that case, fall through to the resource-based fallback.
+            if (path.toString().endsWith(".jar")) {
+                return path;
+            }
         }
 
         // account for https://bugs.openjdk.org/browse/JDK-8376576
+        // also handles AOT/Crema case where getCodeSource() returns a non-jar path
         return resolveJarPathFromClassResource(
                 entryPointClass.getResource(entryPointClass.getSimpleName() + ".class"));
     }
