@@ -16,6 +16,7 @@ import org.hibernate.bytecode.internal.ProxyFactoryFactoryInitiator;
 import org.hibernate.context.internal.MultiTenancyInitiator;
 import org.hibernate.engine.config.internal.ConfigurationServiceInitiator;
 import org.hibernate.engine.jdbc.batch.internal.BatchBuilderInitiator;
+import org.hibernate.context.internal.MultiTenancyInitiator;
 import org.hibernate.engine.jdbc.connections.internal.MultiTenantConnectionProviderInitiator;
 import org.hibernate.engine.jdbc.cursor.internal.RefCursorSupportInitiator;
 import org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator;
@@ -209,6 +210,7 @@ public class PreconfiguredServiceRegistryBuilder {
         // Custom one!
         serviceInitiators.add(QuarkusConnectionProviderInitiator.INSTANCE);
         serviceInitiators.add(MultiTenantConnectionProviderInitiator.INSTANCE);
+        serviceInitiators.add(MultiTenancyInitiator.INSTANCE);
 
         // Custom one: Dialect is injected explicitly
         serviceInitiators.add(new QuarkusRuntimeInitDialectResolverInitiator(rs.getDialect()));

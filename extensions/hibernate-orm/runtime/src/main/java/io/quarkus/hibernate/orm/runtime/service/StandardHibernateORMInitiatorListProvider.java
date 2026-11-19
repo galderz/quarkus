@@ -9,6 +9,7 @@ import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.context.internal.MultiTenancyInitiator;
 import org.hibernate.engine.config.internal.ConfigurationServiceInitiator;
 import org.hibernate.engine.jdbc.batch.internal.BatchBuilderInitiator;
+import org.hibernate.context.internal.MultiTenancyInitiator;
 import org.hibernate.engine.jdbc.connections.internal.MultiTenantConnectionProviderInitiator;
 import org.hibernate.engine.jdbc.cursor.internal.RefCursorSupportInitiator;
 import org.hibernate.engine.jdbc.dialect.internal.DialectResolverInitiator;
@@ -81,6 +82,7 @@ public final class StandardHibernateORMInitiatorListProvider implements InitialI
         // Custom one!
         serviceInitiators.add(QuarkusStaticInitConnectionProviderInitiator.INSTANCE);
         serviceInitiators.add(MultiTenantConnectionProviderInitiator.INSTANCE);
+        serviceInitiators.add(MultiTenancyInitiator.INSTANCE);
         serviceInitiators.add(DialectResolverInitiator.INSTANCE);
 
         // Custom one!
