@@ -89,8 +89,16 @@ public class QuarkusEntryPoint {
 
         // account for https://bugs.openjdk.org/browse/JDK-8376576
         // also handles AOT/Crema case where getCodeSource() returns a non-jar path
-        return resolveJarPathFromClassResource(
+        Path fromResource = resolveJarPathFromClassResource(
                 entryPointClass.getResource(entryPointClass.getSimpleName() + ".class"));
+        if (fromResource != null) {
+            return fromResource;
+        }
+
+        // When AOT-compiled into libjvm.so, getResource() may also return null
+        // because the class bytecode is baked into the shared library.
+        // Fall back to sun.java.command which contains the -jar argument path.
+        return resolveJarPathFromCommand(System.getProperty("sun.java.command"));
     }
 
     // Visible for testing
@@ -100,6 +108,34 @@ public class QuarkusEntryPoint {
             if (fullPath.startsWith("jar:")) {
                 String fileUri = fullPath.substring(4, fullPath.indexOf("!"));
                 return Path.of(new URI(fileUri));
+            }
+        }
+        return null;
+    }
+
+    // Visible for testing
+    static Path resolveJarPathFromCommand(String command) {
+        if (command != null) {
+            // sun.java.command is "path/to/app.jar arg1 arg2" when using -jar
+            int spaceIdx = command.indexOf(' ');
+            String candidate = spaceIdx > 0 ? command.substring(0, spaceIdx) : command;
+            if (candidate.endsWith(".jar")) {
+                Path runJar = Path.of(candidate).toAbsolutePath();
+                // quarkus-run.jar is at the root of quarkus-app/
+                // The caller expects a path 3 levels below app root (like lib/boot/xxx.jar).
+                // Find any boot jar so the parent-3 calculation works.
+                Path appRoot = runJar.getParent();
+                if (appRoot != null) {
+                    Path bootDir = appRoot.resolve("lib").resolve("boot");
+                    if (Files.isDirectory(bootDir)) {
+                        try (var stream = Files.list(bootDir)) {
+                            return stream.filter(p -> p.toString().endsWith(".jar"))
+                                    .findFirst().orElse(null);
+                        } catch (IOException e) {
+                            return null;
+                        }
+                    }
+                }
             }
         }
         return null;
